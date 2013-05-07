@@ -1,0 +1,64 @@
+<configuration>
+
+  <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender" >
+
+    <!-- encoders are assigned the type
+           ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+
+  </appender>
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+
+    <file>log/${bySecond}-gym.log</file>
+
+    <append>true</append>
+
+    <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} %X{symName} %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+
+  </appender>
+
+  <appender name="METRICS" class="ch.qos.logback.core.FileAppender">
+
+
+    <file>log/${bySecond}-metrics.log</file>
+
+    <append>true</append>
+
+    <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} %X{symName} %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+
+  </appender>
+
+  <root level="INFO" >
+    <appender-ref ref="FILE" />
+    <appender-ref ref="CONSOLE" />
+  </root>
+
+  <logger level="ERROR" name="me.prettyprint.cassandra" additivity="false"  >
+    <appender-ref ref="FILE" />
+    <appender-ref ref="CONSOLE" />
+  </logger>
+
+  <logger level="INFO" name="icc.gym.Metrics" additivity="false"  >
+    <appender-ref ref="METRICS" />
+  </logger>
+
+  <logger level="DEBUG" name="workers" additivity="false" >
+    <appender-ref ref="FILE" />
+  </logger>
+
+</configuration>
+
+

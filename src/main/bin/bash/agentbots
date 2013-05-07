@@ -1,0 +1,39 @@
+#!/bin/bash
+
+[ -z  "$BOTS_MAXMEM"   ]      && BOTS_MAXMEM=1024
+[ -z  "$BOTS_MAXPERM"  ]      && BOTS_MAXPERM=`expr $BOTS_MAXMEM / 4`
+[ -z  "$BOTS_MAXNEW"   ]      && BOTS_MAXNEW=`expr $BOTS_MAXMEM  / 2`
+
+[ -z "$BOTS_JMX_PORT"  ]      && BOTS_JMX_PORT=13334
+[ -z "$BOTS_DEBUGGER_PORT"  ] && BOTS_DEBUGGER_PORT=1405
+
+MAIN_CLASS=icc.vu.bots.AgentBotsMain
+JAVA_OPTS=" -Dfile.encoding=UTF-8                                 \
+            -server                                               \
+            -Xms${BOTS_MAXMEM}m                                   \
+            -Xmx${BOTS_MAXMEM}m                                   \
+            -Xmn${BOTS_MAXNEW}m                                   \
+            -Xss512k                                              \
+            -XX:MaxPermSize=${BOTS_MAXPERM}m                      \
+            -XX:+CMSClassUnloadingEnabled                         \
+            -XX:+HeapDumpOnOutOfMemoryError                       \
+            -XX:+UseThreadPriorities                              \
+            -XX:+UseConcMarkSweepGC                               \
+            -XX:+UseParNewGC                                      \
+            -XX:ParallelGCThreads=10                              \
+            -XX:SurvivorRatio=8                                   \
+            -XX:+UseBiasedLocking                                 \
+            -XX:+UseStringCache                                   \
+            -XX:+AggressiveOpts                                   \
+            -XX:+OptimizeStringConcat                             \
+            -XX:+UseCompressedOops                                \
+            -XX:+UseCompressedStrings                             \
+            -Dcom.sun.management.jmxremote.port=${BOTS_JMX_PORT}  \
+            -Dcom.sun.management.jmxremote.ssl=false              \
+            -Dcom.sun.management.jmxremote.authenticate=false "
+
+CLASSPATH="conf/:lib/agent-bots.jar"
+
+exec java $JAVA_OPTS $BOTS_JVM_EXTRA_OPTS -cp $CLASSPATH $MAIN_CLASS $BOTS_OPTS $*
+
+exit 0
