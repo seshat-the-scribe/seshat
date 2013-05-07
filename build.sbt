@@ -1,6 +1,6 @@
 import AssemblyKeys._ // put this at the top of the file
 
-name          := "L3"
+name          := "seshat"
 
 version       := "0.0.1-SNAPSHOT"
 
