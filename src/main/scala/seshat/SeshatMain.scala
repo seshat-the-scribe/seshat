@@ -43,7 +43,7 @@ object SeshatMain {
 
       val config = buildConfig( name )
 
-      log.info( s"Launching coordinator with config ${config}" )
+      log.info( s"Launching coordinator with config $config" )
       val coord = spawnCoordinator(system, config)
       coord ! Coordinator.Msg.Start
 
@@ -61,16 +61,18 @@ object SeshatMain {
   }
 
 
+  // TODO move to a config package
+  //      with all config and plugin loading machinery.
+  // TODO load plugins by reading plugins.conf
+  //      and merging it with builtinPlugins.conf
   def buildConfig(name: String) = {
 
     val config = ConfigFactory.parseFile(new File(name))
 
     log.debug( "building configses"  )
 
-    val cfs = config.getConfigList("gym.routine.columnFamilies").asScala
-
     (for {
-      cfg      <- cfs
+      cfg      <- Option(config)
       inputs   <- Option(cfg.getConfigList("inputs").asScala.toSeq)
       filters  <- Option(cfg.getConfigList("filters").asScala.toSeq)
       outputs  <- Option(cfg.getConfigList("outputs").asScala.toSeq)
@@ -106,9 +108,7 @@ object Arguments {
   import ShortDefinitions._
 
   val defs = List (
-    VD("cassandraIp"),
-    VD("cassandraPort"),
-    VD("routine")
+    VD("config")
   )
 
   def parse(args: Arguments) = ArgsParser( args, defs )
