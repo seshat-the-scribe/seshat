@@ -14,10 +14,6 @@ import java.io.File
 import akka.util.Timeout
 import akka.actor.ActorSystem
 
-
-import icc.util.arguments._
-import icc.util.AnsiColors._
-
 /**
  *
  * User: f
@@ -52,8 +48,8 @@ object SeshatMain {
 
       case e: Exception =>
         system.shutdown()
-        println(Red(e.getMessage))
-        log.error( Red(e.getMessage) )
+        println((e.getMessage))
+        log.error( (e.getMessage) )
         throw e
 
     }
