@@ -45,7 +45,7 @@ object SeshatMain {
 
       log.info( s"Launching coordinator with config $config" )
       val coord = spawnCoordinator(system, config)
-      coord ! Coordinator.Msg.Start
+      coord ! Processor.Msg.Start
 
 
     } catch {

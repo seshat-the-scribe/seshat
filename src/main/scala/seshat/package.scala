@@ -7,7 +7,7 @@ import akka.actor.{Props, ActorSystem}
 package object seshat {
 
   def spawnCoordinator(system: ActorSystem, config: SeshatConfig) = system.actorOf(
-    Props(new Coordinator(config)),
+    Props(new Processor(config)),
     s"${config.name.replace(" ","_").toUpperCase}-COORDINATOR"
   )
 
