@@ -23,7 +23,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
 
 
 libraryDependencies ++= Seq(
-                              "inConcert" %% "arguments" % "0.0.1-SNAPSHOT",
                               "com.typesafe.akka"                   %%  "akka-actor"                % "2.1.2",
                               "com.typesafe.akka"                   %%  "akka-slf4j"                % "2.1.2",
                               "ch.qos.logback"                      %   "logback-classic"           % "1.0.9",
@@ -33,8 +32,6 @@ libraryDependencies ++= Seq(
                               "com.typesafe.akka"                   %%  "akka-testkit"              % "2.1.2"    % "test",
                               "org.specs2"                          %%  "specs2"                    % "1.12.3"   % "test"   )
 
-
-resolvers ++= Seq( "inConcert Repo" at "http://artifacts.inconcert/artifactory/icc" )
 
 testOptions in Test += Tests.Argument( "console", "junitxml" )
 

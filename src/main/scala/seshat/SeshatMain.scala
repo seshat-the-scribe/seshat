@@ -103,15 +103,4 @@ object SeshatMain {
 
 }
 
-object Arguments {
 
-  import ShortDefinitions._
-
-  val defs = List (
-    VD("config")
-  )
-
-  def parse(args: Arguments) = ArgsParser( args, defs )
-
-
-}
