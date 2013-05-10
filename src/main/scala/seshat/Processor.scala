@@ -4,12 +4,12 @@ import akka.actor.{Actor, ActorLogging}
 
 
 /**
- * Companion Module of the [[seshat.Coordinator]] class
+ * Companion Module of the [[seshat.Processor]] class
  *
- * The [[seshat.Coordinator.Msg]] object defines the msg protocol.
+ * The [[seshat.Processor.Msg]] object defines the msg protocol.
  *
  */
-object Coordinator {
+object Processor {
 
   object Msg {
     case object Prepare // Create all the things! (resolve plugins, create children)
@@ -30,20 +30,23 @@ object Coordinator {
  * TODO create filter pipeline passing outputs
  * TODO create children inputs passing pipeline
  * TODO start inputs
- * TODO receive events from inputs and pipeTo filter pipeline
- * TODO receive events from filter pipeline and pipeTo outputs
  *
  * TODO measure all the things!
  *
  * }}}
  *
  */
-class Coordinator( val config: SeshatConfig ) extends Actor with ActorLogging {
+class Processor( val config: SeshatConfig ) extends Actor with ActorLogging {
 
-  import Coordinator.Msg.Start
+  import Processor.Msg
 
   def receive: Receive = {
-    case Start =>
+    case Msg.Prepare  => prepare()
+    case Msg.Start    => start()
   }
+
+  def prepare() {}
+
+  def start() {}
 
 }
