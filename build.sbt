@@ -16,7 +16,7 @@ jarName in assembly <<= (name, version) map ( (n,v) => "seshat-"+v+"-full.jar" )
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
     //case x if x startsWith  "javax/servlet"   => MergeStrategy.last
-    //case x if x endsWith    ".html"           => MergeStrategy.first
+    case x if x endsWith "about.html" => MergeStrategy.discard
     case x => old(x)
   }
 }
