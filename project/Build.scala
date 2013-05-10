@@ -3,19 +3,19 @@ import sbt._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
-object L3Build extends Build
+object SeshatBuild extends Build
 {
 
   lazy val root =
     Project(
       "root", 
       file("."), 
-      settings = Project.defaultSettings ++ assemblySettings ++ AgentBots.settings
+      settings = Project.defaultSettings ++ assemblySettings ++ SeshatSettings.settings
     ) 
 
 }
 
-object L3Settings {
+object SeshatSettings {
 
   lazy val settings = Seq( bundleTask )
 
