@@ -14,14 +14,14 @@
 
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
 
-    <file>log/${bySecond}-gym.log</file>
+    <file>logs/${bySecond}-seshat.log</file>
 
     <append>true</append>
 
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
-      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} %X{symName} %-5level %logger{35} - %msg%n</pattern>
+      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS}  %-5level %logger{35} - %msg%n</pattern>
     </encoder>
 
   </appender>
@@ -29,14 +29,14 @@
   <appender name="METRICS" class="ch.qos.logback.core.FileAppender">
 
 
-    <file>log/${bySecond}-metrics.log</file>
+    <file>logs/${bySecond}-metrics.log</file>
 
     <append>true</append>
 
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
-      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} %X{symName} %-5level %logger{35} - %msg%n</pattern>
+      <pattern>%d{YYYY-MM-DD HH:mm:ss.SSS} %-5level %logger{35} - %msg%n</pattern>
     </encoder>
 
   </appender>
@@ -53,10 +53,6 @@
 
   <logger level="INFO" name="icc.gym.Metrics" additivity="false"  >
     <appender-ref ref="METRICS" />
-  </logger>
-
-  <logger level="DEBUG" name="workers" additivity="false" >
-    <appender-ref ref="FILE" />
   </logger>
 
 </configuration>
