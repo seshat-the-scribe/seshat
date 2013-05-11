@@ -1,9 +1,9 @@
 
 import com.typesafe.config.Config
 import akka.actor.{Props, ActorSystem}
+import seshat.config.plugins.Plugins
 
 
-/** Seshat is a library and program to handle streams of logs.  */
 /** Seshat is a tool and library to handle streams of logs.
   *
   * {{{
@@ -22,10 +22,11 @@ import akka.actor.{Props, ActorSystem}
   */
 package object seshat {
 
-  def spawnCoordinator(system: ActorSystem, config: SeshatConfig) = system.actorOf(
-    Props(new Processor(config)),
-    s"${config.name.replace(" ","_").toUpperCase}-COORDINATOR"
-  )
+  def spawnCoordinator(system: ActorSystem, config: SeshatConfig, plugins: Plugins) =
+    system.actorOf(
+      Props(new Processor(config,plugins)),
+      s"${config.name.replace(" ","_").toUpperCase}-COORDINATOR"
+    )
 
   case class SeshatConfig (
     name:      String,
