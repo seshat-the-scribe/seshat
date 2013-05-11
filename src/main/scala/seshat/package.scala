@@ -1,7 +1,7 @@
 
 import com.typesafe.config.Config
 import akka.actor.{Props, ActorSystem}
-import seshat.config.plugins.Plugins
+import seshat.config.plugins.{PluginConfig, Plugins}
 
 
 /** Seshat is a tool and library to handle streams of logs.
@@ -30,10 +30,12 @@ package object seshat {
 
   case class SeshatConfig (
     name:      String,
-    inputs:    Seq[Config],
-    filters:   Seq[Config],
-    outputs:   Seq[Config]
+    inputs:    Seq[PluginConfig],
+    filters:   Seq[PluginConfig],
+    outputs:   Seq[PluginConfig]
   )
+
+
 
   object RTX {
     def apply(msg: String) = new RuntimeException(msg)

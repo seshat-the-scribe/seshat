@@ -6,15 +6,20 @@ package seshat.config
 package object plugins {
 
   case class Plugins(
-    inputs:   Set[PluginConfig[InputPlugin]],
-    filters:  Set[PluginConfig[FilterPlugin]],
-    outputs:  Set[PluginConfig[OutputPlugin]]
+    inputs:   Set[PluginDescriptor[InputPlugin]],
+    filters:  Set[PluginDescriptor[FilterPlugin]],
+    outputs:  Set[PluginDescriptor[OutputPlugin]]
   )
 
-  trait PluginConfig[T <: Plugin] {
+  trait PluginDescriptor[T <: Plugin] {
     val name: String
     val clazz: Class[T]
   }
+
+  case class PluginConfig(
+    name:   String,
+    config: Map[String,String]
+  )
 
   trait Plugin
 

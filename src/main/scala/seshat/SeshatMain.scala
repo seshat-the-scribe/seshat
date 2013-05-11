@@ -13,6 +13,7 @@ import java.io.File
 
 import akka.util.Timeout
 import akka.actor.ActorSystem
+import seshat.config.plugins.Plugins
 
 /**
  *
@@ -40,7 +41,8 @@ object SeshatMain {
       val config = buildConfig( name )
 
       log.info( s"Launching coordinator with config $config" )
-      val coord = spawnCoordinator(system, config)
+      val plugins = Plugins(Set(),Set(),Set())     //FIXME get a real Plugins instance
+      val coord = spawnCoordinator(system, config, plugins )
       coord ! Processor.Msg.Start
 
 
@@ -68,16 +70,15 @@ object SeshatMain {
     log.debug( "building configses"  )
 
     (for {
-      cfg      <- Option(config)
-      inputs   <- Option(cfg.getConfigList("inputs").asScala.toSeq)
-      filters  <- Option(cfg.getConfigList("filters").asScala.toSeq)
-      outputs  <- Option(cfg.getConfigList("outputs").asScala.toSeq)
+      input   <- Option(config.getObject("input"))
+      filter  <- Option(config.getObject("filters"))
+      output  <- Option(config.getObject("output"))
     } yield (
       SeshatConfig(
         name,
-        inputs,
-        filters,
-        outputs
+        input,
+        filter,
+        output
       )
     )).head
 
