@@ -1,7 +1,7 @@
 package seshat
 
 import akka.actor.{Actor, ActorLogging}
-import seshat.config.plugins.Plugins
+import seshat.plugin.Plugins
 
 
 /**
