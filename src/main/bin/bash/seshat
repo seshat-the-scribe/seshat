@@ -1,20 +1,20 @@
 #!/bin/bash
 
-[ -z  "$BOTS_MAXMEM"   ]      && BOTS_MAXMEM=1024
-[ -z  "$BOTS_MAXPERM"  ]      && BOTS_MAXPERM=`expr $BOTS_MAXMEM / 4`
-[ -z  "$BOTS_MAXNEW"   ]      && BOTS_MAXNEW=`expr $BOTS_MAXMEM  / 2`
+[ -z  "$SESHAT_MAXMEM"   ]      && SESHAT_MAXMEM=1024
+[ -z  "$SESHAT_MAXPERM"  ]      && SESHAT_MAXPERM=`expr $SESHAT_MAXMEM / 4`
+[ -z  "$SESHAT_MAXNEW"   ]      && SESHAT_MAXNEW=`expr $SESHAT_MAXMEM  / 2`
 
-[ -z "$BOTS_JMX_PORT"  ]      && BOTS_JMX_PORT=13334
-[ -z "$BOTS_DEBUGGER_PORT"  ] && BOTS_DEBUGGER_PORT=1405
+[ -z "$SESHAT_JMX_PORT"  ]      && SESHAT_JMX_PORT=13334
+[ -z "$SESHAT_DEBUGGER_PORT"  ] && SESHAT_DEBUGGER_PORT=1405
 
-MAIN_CLASS=icc.vu.bots.AgentBotsMain
+MAIN_CLASS=icc.vu.SESHAT.AgentSESHATMain
 JAVA_OPTS=" -Dfile.encoding=UTF-8                                 \
             -server                                               \
-            -Xms${BOTS_MAXMEM}m                                   \
-            -Xmx${BOTS_MAXMEM}m                                   \
-            -Xmn${BOTS_MAXNEW}m                                   \
+            -Xms${SESHAT_MAXMEM}m                                   \
+            -Xmx${SESHAT_MAXMEM}m                                   \
+            -Xmn${SESHAT_MAXNEW}m                                   \
             -Xss512k                                              \
-            -XX:MaxPermSize=${BOTS_MAXPERM}m                      \
+            -XX:MaxPermSize=${SESHAT_MAXPERM}m                      \
             -XX:+CMSClassUnloadingEnabled                         \
             -XX:+HeapDumpOnOutOfMemoryError                       \
             -XX:+UseThreadPriorities                              \
@@ -28,12 +28,12 @@ JAVA_OPTS=" -Dfile.encoding=UTF-8                                 \
             -XX:+OptimizeStringConcat                             \
             -XX:+UseCompressedOops                                \
             -XX:+UseCompressedStrings                             \
-            -Dcom.sun.management.jmxremote.port=${BOTS_JMX_PORT}  \
+            -Dcom.sun.management.jmxremote.port=${SESHAT_JMX_PORT}  \
             -Dcom.sun.management.jmxremote.ssl=false              \
             -Dcom.sun.management.jmxremote.authenticate=false "
 
-CLASSPATH="conf/:lib/agent-bots.jar"
+CLASSPATH="conf/:lib/agent-SESHAT.jar"
 
-exec java $JAVA_OPTS $BOTS_JVM_EXTRA_OPTS -cp $CLASSPATH $MAIN_CLASS $BOTS_OPTS $*
+exec java $JAVA_OPTS $SESHAT_JVM_EXTRA_OPTS -cp $CLASSPATH $MAIN_CLASS $SESHAT_OPTS $*
 
 exit 0
