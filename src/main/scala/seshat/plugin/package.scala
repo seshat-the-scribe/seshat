@@ -1,20 +1,26 @@
 package seshat
 
-import akka.actor.{ActorLogging, Actor}
-
 
 /**
- * This package contains the machinery to resolve plugins configs to plugins and ways to instantiate them.
+ * This package contains the machinery to resolve plugin configs to plugins and ways to instantiate them.
+ *
  */
 package object plugin {
+
+  case class Event(
+    raw: Array[Byte],
+    kind: String,
+    timestamp: Long,
+    originalTimeStamp: Option[Long],
+    field: Map[String, String] = Map(),
+    tags: Set[String] = Set()
+  )
 
   case class Plugins(
     inputs:   Set[PluginDescriptor],
     filters:  Set[PluginDescriptor],
     outputs:  Set[PluginDescriptor]
   )
-
-  abstract class Plugin extends Actor with ActorLogging
 
   case class  PluginDescriptor(
     name:   String,

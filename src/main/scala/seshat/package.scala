@@ -8,8 +8,8 @@ import seshat.config._
   *
   * {{{
   *
-  * TODO parse configuration (just extract input, filter, output)
-  * TODO resolve plugins and instantiate as appropriate.
+  * TODO OK parse configuration (just extract input, filter, output)
+  * TODO ~ resolve plugins and instantiate as appropriate.
   * TODO create output children
   * TODO create filter pipeline passing outputs
   * TODO create children inputs passing pipeline
@@ -31,17 +31,14 @@ package object seshat {
 
   def start( name: String, system: ActorSystem ) {
     val config  = buildConfig( name )
-    val coord   = spawnProcessor(system, config)
-    coord ! Processor.Msg.Start
+    spawnProcessor(system, config) ! Processor.Msg.Start
   }
-
-
 
   def spawnProcessor(system: ActorSystem, config: SeshatConfig): ActorRef = {
     val plugins = resolvePlugins
     system.actorOf(
       Props(new Processor(config, plugins)),
-      s"${config.name.replace(" ", "_").toUpperCase}-COORDINATOR"
+      s"${config.name.replace(" ", "_").toUpperCase}-PROCESSOR"
     )
   }
 
@@ -50,6 +47,4 @@ package object seshat {
   }
 
 }
-
-
 
