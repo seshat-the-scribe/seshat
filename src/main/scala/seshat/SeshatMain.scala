@@ -18,8 +18,6 @@ import seshat.config._
  */
 object SeshatMain {
 
-  implicit val timeout = Timeout(2 seconds)
-
   val system = ActorSystem("Seshat")
 
   sys addShutdownHook {
@@ -38,24 +36,12 @@ object SeshatMain {
 
       case e: Exception =>
         system.shutdown()
-        println((e.getMessage))
         log.error( (e.getMessage) )
-        throw e
+        sys.exit(1)
 
     }
 
   }
-
-
-  def failBadNumberFormatWith(msg: String) =
-    catching(classOf[NumberFormatException]).withApply( x => throw RTX(msg + " => " + x.getMessage) )
-
-  def failExceptionWith(msg: String) =
-    catching(classOf[Exception]).withApply( x => throw RTX(msg + " => " + x.getMessage) )
-
-  def failNoSuchElementWith(msg: String) =
-    catching(classOf[NoSuchElementException]).withApply( x => throw RTX(msg + " => " + x.getMessage) )
-
 
   private lazy val log = LoggerFactory.getLogger(getClass)
 
