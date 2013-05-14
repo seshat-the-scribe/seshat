@@ -30,14 +30,14 @@ package object seshat {
   )
 
   def start( name: String, system: ActorSystem ) {
-    val config  = buildConfig( name )
+    val config = buildConfig( name )
     spawnProcessor(system, config) ! Processor.Msg.Start
   }
 
   def spawnProcessor(system: ActorSystem, config: SeshatConfig): ActorRef = {
     val plugins = resolvePlugins
     system.actorOf(
-      Props(new Processor(config, plugins)),
+      Props( classOf[Processor], config, plugins ),
       s"${config.name.replace(" ", "_").toUpperCase}-PROCESSOR"
     )
   }
