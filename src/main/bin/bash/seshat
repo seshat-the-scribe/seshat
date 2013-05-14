@@ -8,29 +8,32 @@
 [ -z "$SESHAT_DEBUGGER_PORT"  ] && SESHAT_DEBUGGER_PORT=1405
 
 MAIN_CLASS=icc.vu.SESHAT.AgentSESHATMain
-JAVA_OPTS=" -Dfile.encoding=UTF-8                                 \
-            -server                                               \
-            -Xms${SESHAT_MAXMEM}m                                   \
-            -Xmx${SESHAT_MAXMEM}m                                   \
-            -Xmn${SESHAT_MAXNEW}m                                   \
-            -Xss512k                                              \
-            -XX:MaxPermSize=${SESHAT_MAXPERM}m                      \
-            -XX:+CMSClassUnloadingEnabled                         \
-            -XX:+HeapDumpOnOutOfMemoryError                       \
-            -XX:+UseThreadPriorities                              \
-            -XX:+UseConcMarkSweepGC                               \
-            -XX:+UseParNewGC                                      \
-            -XX:ParallelGCThreads=10                              \
-            -XX:SurvivorRatio=8                                   \
-            -XX:+UseBiasedLocking                                 \
-            -XX:+UseStringCache                                   \
-            -XX:+AggressiveOpts                                   \
-            -XX:+OptimizeStringConcat                             \
-            -XX:+UseCompressedOops                                \
-            -XX:+UseCompressedStrings                             \
-            -Dcom.sun.management.jmxremote.port=${SESHAT_JMX_PORT}  \
-            -Dcom.sun.management.jmxremote.ssl=false              \
-            -Dcom.sun.management.jmxremote.authenticate=false "
+
+JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8"
+JAVA_OPTS="$JAVA_OPTS -server"
+JAVA_OPTS="$JAVA_OPTS -Xms${SESHAT_MAXMEM}m"
+JAVA_OPTS="$JAVA_OPTS -Xmx${SESHAT_MAXMEM}m"
+JAVA_OPTS="$JAVA_OPTS -Xmn${SESHAT_MAXNEW}m"
+JAVA_OPTS="$JAVA_OPTS -Xss512k"
+JAVA_OPTS="$JAVA_OPTS -XX:MaxPermSize=${SESHAT_MAXPERM}m"
+JAVA_OPTS="$JAVA_OPTS -XX:+CMSClassUnloadingEnabled"
+JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseThreadPriorities"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
+JAVA_OPTS="$JAVA_OPTS -XX:ParallelGCThreads=10"
+JAVA_OPTS="$JAVA_OPTS -XX:SurvivorRatio=8"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseBiasedLocking"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseStringCache"
+JAVA_OPTS="$JAVA_OPTS -XX:+AggressiveOpts"
+JAVA_OPTS="$JAVA_OPTS -XX:+OptimizeStringConcat"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseCompressedOops"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseCompressedStrings"
+JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.port=${SESHAT_JMX_PORT}"
+JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.ssl=false"
+JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
+JAVA_OPTS=" -Dfile.encoding=UTF-8
+JAVA_OPTS=$JAVA_OPTS+" -Dfile.encoding=UTF-8
 
 CLASSPATH="conf/:lib/agent-SESHAT.jar"
 
