@@ -33,7 +33,7 @@ JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.port=${SESHAT_JMX_PORT}"
 JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.ssl=false"
 JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
 
-CLASSPATH="conf/:lib/agent-SESHAT.jar"
+CLASSPATH="conf/:lib/seshat.jar"
 
 exec java $JAVA_OPTS $SESHAT_JVM_EXTRA_OPTS -cp $CLASSPATH $MAIN_CLASS $SESHAT_OPTS $*
 

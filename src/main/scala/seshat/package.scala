@@ -29,20 +29,37 @@ package object seshat {
     outputs: Set[PluginConfig]
   )
 
+  /**
+   *  Represents a event going through the pipeline.
+   *  
+   *  This classes should be instantiated by an InputPlugin with the raw data
+   *  a timestamp and an event kind.
+   *
+   */
+  case class Event(
+    raw:                Array[Byte],
+    kind:               String,
+    timestamp:          Long,
+    fields:             Map[String, String] = Map(),
+    tags:               Set[String] = Set()
+  )
+
+
+  // FIXME propagar el name.
   def start( name: String, system: ActorSystem ) {
     val config = buildConfig( name )
     spawnProcessor(system, config) ! Processor.Msg.Start
   }
 
   def spawnProcessor(system: ActorSystem, config: SeshatConfig): ActorRef = {
-    val plugins = resolvePlugins
+    val plugins: Plugins = resolvePlugins
     system.actorOf(
       Props( classOf[Processor], config, plugins ),
       s"${config.name.replace(" ", "_").toUpperCase}-PROCESSOR"
     )
   }
 
-  object RTX {
+  object Kaboom {
     def apply(msg: String) = new RuntimeException(msg)
   }
 

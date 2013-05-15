@@ -6,14 +6,17 @@ target/
 .project
 .settings/
 
+.DS_Store
+
 .swo
+.swp
+
 *.scalala
 *.hprof
 /.idea/
 /.idea_modules/
 
 /.cache
-bots.log*
 
 *.log
 *.log.*

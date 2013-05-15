@@ -20,7 +20,8 @@ object SeshatMain {
 
   val system = ActorSystem("Seshat")
 
-  sys addShutdownHook {
+  sys.addShutdownHook {
+    log.info("Shutting down system")
     system.shutdown()
   }
 
@@ -37,6 +38,7 @@ object SeshatMain {
       case e: Exception =>
         system.shutdown()
         log.error( (e.getMessage) )
+        e.printStackTrace
         sys.exit(1)
 
     }

@@ -4,7 +4,7 @@ name          := "seshat"
 
 version       := "0.0.1-SNAPSHOT"
 
-organization  := "l3"
+organization  := "L3"
 
 scalaVersion  := "2.10.1"
 
@@ -45,6 +45,4 @@ scalacOptions ++= Seq(
   "-feature",
   "-encoding", "utf8"
 )
-
-
 

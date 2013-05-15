@@ -1,6 +1,8 @@
 package seshat.plugin
 
-import akka.actor.{ActorRef, ActorLogging, Actor}
+import seshat._
+
+import akka.actor.{Actor, ActorLogging, ActorRef}
 
 /**
  *
@@ -19,8 +21,8 @@ trait Plugin {
  val config: PluginConfig
 }
 
-/**  An input plugin is an actor that is built from with a config and an
- *  ActorRef to the filter pipeline.
+/**  An input plugin is an actor that is built with  a config and an
+ *  ActorRef to the filter actor.
  *
  *  It must support the messages [[seshat.plugin.Plugin.Msg.Start]]
  *  and [[seshat.plugin.Plugin.Msg.Stop]].
@@ -38,19 +40,30 @@ trait Plugin {
  *
  */
 abstract class InputPlugin(val config:PluginConfig, filterPipeline: ActorRef)
-  extends Plugin {
+  extends Plugin with Actor with ActorLogging {
 
 }
 
-/**  A Filter is a `Function1[Option[Event],Option[Event]]`.
+/**  A Filter is an  `Option[Event] => Option[Event]` function (or  `Function1[Option[Event],Option[Event]]`).
   *
   * It is created from a config and a set ActorRefs which point to the output plugins.
+  * Filter plugins are composed together and attached to a host actor by the Processor.
+  * They are invoked when the host actor is handled a message.
   *
   * @param config configuration of the plugin
   *
   */
-abstract class FilterPlugin(val config:PluginConfig)  extends Plugin with ((Option[Event]) => Option[Event])
+abstract class FilterPlugin(val config:PluginConfig, val outputs: Set[ActorRef])  
+  extends Plugin with ( Option[Event] => Option[Event] ) {
+
+}
 
 
+/** An output plugin is an actor which accepts Start, Stop and Event messages.
+  *
+  * They are created and handled by a Outputs actor which acts as a broadcaster and as a buffer.
+  *
+  * @param config
+  */
 abstract class OutputPlugin(val config:PluginConfig)  extends Plugin
 
