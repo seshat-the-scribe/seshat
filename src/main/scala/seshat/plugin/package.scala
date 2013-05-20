@@ -29,21 +29,37 @@ package object plugin {
   def resolvePlugins = {
     val config = ConfigFactory.parseResources("seshat-builtins.conf")
     Plugins(
-      resolve(config,"input"),
-      resolve(config,"filter"),
-      resolve(config,"output")
+      resolve(config, "input"),
+      resolve(config, "filter"),
+      resolve(config, "output")
     )
   }
 
   private def resolve(config:Config, kind: String): Set[PluginDescriptor] = 
-    config.getObject("seshat.plugins."+kind).asScala
-      .map{ case (k,v) => k -> v.toMap   }
+    config.getObject( "seshat.plugins."+kind )
+      .asScala
+      .map{ case (k,v) => k -> v.toMap }
       .map{ case (k,v) => 
         PluginDescriptor(
           k,
-          Class.forName(v("className")).asInstanceOf[Class[Plugin]]
+          validClassOrFail(kind, Class.forName(v("className")))
+            .asInstanceOf[Class[Plugin]]
         )
       }.toSet
+
+
+  private def validClassOrFail(kind: String, cls:Class[_]): Class[_] = {
+    if( kinds(kind).isAssignableFrom(cls) )
+      cls
+    else throw Kaboom(s"${cls.getCanonicalName} is not an $kind plugin")
+  }
+
+  private val kinds = Map (
+    "input"   -> classOf[InputPlugin],
+    "filter"  -> classOf[FilterPlugin],
+    "output"  -> classOf[OutputPlugin]
+  )
+
 
 
 }

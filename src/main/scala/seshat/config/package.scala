@@ -20,6 +20,7 @@ package object config {
 
     import java.util.HashMap
 
+    // FIXME make recursive
     def toMap = {
       lazy val log = LoggerFactory.getLogger(getClass)
       try {
@@ -30,29 +31,36 @@ package object config {
       } catch {
         // FIXME try to get a single value if it is one.
         case e: ClassCastException => 
-          log.error("Cannot convert "+value.unwrapped+" of class "+value.unwrapped.getClass.getName+" to Map ("+value.render+")")          
+          log.error( "Cannot convert "+value.unwrapped+
+                     " of class "+value.unwrapped.getClass.getName+
+                     " to Map ("+value.render+")"
+                   )
           throw e
       }
 
     }
   }
 
-  def buildConfig(name: String) = {
+  def buildConfigFromFile(name: String) = {
 
     val file = new File(name)
 
     val config = ConfigFactory.parseFile(file)
 
-
     val inputConfig =
-      config.getObject("input").asScala.map( { case (k,v) => PluginConfig(k,v.toMap) }  ).toSet
+      config.getObject("input").asScala.map(
+        { case (k,v) => PluginConfig(k,v.toMap) }
+      ).toSet
 
     val filterConfig =
-      config.getObject("filter").asScala.map( { case (k,v) => PluginConfig(k,v.toMap) }  
-    ).toSet
+      config.getObject("filter").asScala.map(
+        { case (k,v) => PluginConfig(k, v.toMap) }
+      ).toSet
 
     val outputConfig =
-      config.getObject("output").asScala.map( { case (k,v) => PluginConfig(k,v.toMap)  }  ).toSet
+      config.getObject("output").asScala.map(
+        { case (k,v) => PluginConfig(k,v.toMap)  }
+      ).toSet
 
     SeshatConfig(
       file.getName,

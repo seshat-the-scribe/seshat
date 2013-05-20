@@ -47,7 +47,7 @@ package object seshat {
 
   // FIXME propagar el name.
   def start( name: String, system: ActorSystem ) {
-    val config = buildConfig( name )
+    val config = buildConfigFromFile( name )
     spawnProcessor(system, config) ! Processor.Msg.Start
   }
 

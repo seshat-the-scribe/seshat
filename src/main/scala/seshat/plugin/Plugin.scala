@@ -7,30 +7,29 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 /**
  *
  */
-object Plugin {
+trait Plugin {
+ val config: PluginConfig
+}
+
+
+object InputPlugin {
   object Msg {
     case object Start
     case object Stop
+    case object Throttle
   }
-}
-
-/**
- *
- */
-trait Plugin {
- val config: PluginConfig
 }
 
 /**  An input plugin is an actor that is built with  a config and an
  *  ActorRef to the filter actor.
  *
- *  It must support the messages [[seshat.plugin.Plugin.Msg.Start]]
- *  and [[seshat.plugin.Plugin.Msg.Stop]].
+ *  It must support the messages [[seshat.plugin.InputPlugin.Msg.Start]],
+ *  [[seshat.plugin.InputPlugin.Msg.Stop]] and [[seshat.plugin.InputPlugin.Msg.Throttle]].
  *
  *  An input plugins must start consuming input ONLY when the `Start` message is received and
  *  must stop when `Stop` is received.
  *
- *  Start means reading the input and `Events` to the filter pipeline.
+ *  Start means reading the input and send `Events` to the filter pipeline.
  *  Stops means stop reading and send the remaining events to the pipeline; no Events should be dropped.
  *
  *  Input plugins are free to use postStop and postStart lifecycle events.
@@ -39,8 +38,20 @@ trait Plugin {
  *  @param filterPipeline the configured filter pipeline.
  *
  */
-abstract class InputPlugin(val config:PluginConfig, filterPipeline: ActorRef)
+abstract class InputPlugin(val config:PluginConfig, val filterPipeline: ActorRef)
   extends Plugin with Actor with ActorLogging {
+
+  import InputPlugin.Msg
+
+  def receive = {
+    case Msg.Start    => start()
+    case Msg.Stop     => stop()
+    case Msg.Throttle => throttle()
+  }
+
+  def start() {}
+  def stop() {}
+  def throttle() {}
 
 }
 
@@ -53,7 +64,7 @@ abstract class InputPlugin(val config:PluginConfig, filterPipeline: ActorRef)
   * @param config configuration of the plugin
   *
   */
-abstract class FilterPlugin(val config:PluginConfig, val outputs: Set[ActorRef])  
+abstract class FilterPlugin(val config: PluginConfig, val outputs: Set[ActorRef])
   extends Plugin with ( Option[Event] => Option[Event] ) {
 
 }
@@ -65,5 +76,5 @@ abstract class FilterPlugin(val config:PluginConfig, val outputs: Set[ActorRef])
   *
   * @param config
   */
-abstract class OutputPlugin(val config:PluginConfig)  extends Plugin
+abstract class OutputPlugin(val config: PluginConfig)  extends Plugin
 

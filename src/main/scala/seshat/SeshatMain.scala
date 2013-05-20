@@ -31,14 +31,15 @@ object SeshatMain {
     try {
 
       val name = args(0)
-      start(name,system)
+      log.info("Starting with name")
+      start(name, system)
 
     } catch {
 
       case e: Exception =>
         system.shutdown()
         log.error( (e.getMessage) )
-        e.printStackTrace
+        e.printStackTrace()
         sys.exit(1)
 
     }
