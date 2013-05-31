@@ -6,7 +6,6 @@ import seshat.config._
 
 /**
  * This package contains the machinery to resolve plugin configs to plugins and ways to instantiate them.
- *
  */
 package object plugin {
 
@@ -19,7 +18,7 @@ package object plugin {
   case class PluginConfig(
     name:   String,
     config: Map[String, String]
-   )
+  )
 
   case class  PluginDescriptor(
     name:   String,
@@ -38,20 +37,19 @@ package object plugin {
   private def resolve(config:Config, kind: String): Set[PluginDescriptor] = 
     config.getObject( "seshat.plugins."+kind )
       .asScala
-      .map{ case (k,v) => k -> v.toMap }
-      .map{ case (k,v) => 
+      .map { case (k,v) =>
+        val u = v.extracted
         PluginDescriptor(
           k,
-          validClassOrFail(kind, Class.forName(v("className")))
-            .asInstanceOf[Class[Plugin]]
+          validClassOrFail(kind, Class.forName(u("className")))
         )
       }.toSet
 
 
-  private def validClassOrFail(kind: String, cls:Class[_]): Class[_] = {
+  private def validClassOrFail(kind: String, cls:Class[_]): Class[Plugin] = {
     if( kinds(kind).isAssignableFrom(cls) )
-      cls
-    else throw Kaboom(s"${cls.getCanonicalName} is not an $kind plugin")
+      cls.asInstanceOf[Class[Plugin]]
+    else throw Kaboom(s"${cls.getCanonicalName} is not a $kind plugin")
   }
 
   private val kinds = Map (
@@ -59,8 +57,6 @@ package object plugin {
     "filter"  -> classOf[FilterPlugin],
     "output"  -> classOf[OutputPlugin]
   )
-
-
 
 }
 

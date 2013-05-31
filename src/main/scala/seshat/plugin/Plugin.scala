@@ -20,13 +20,12 @@ object InputPlugin {
   }
 }
 
-/**  An input plugin is an actor that is built with  a config and an
- *  ActorRef to the filter actor.
+/**  An input plugin is an actor that reads events from a source and sends them to its parent.
  *
  *  It must support the messages [[seshat.plugin.InputPlugin.Msg.Start]],
  *  [[seshat.plugin.InputPlugin.Msg.Stop]] and [[seshat.plugin.InputPlugin.Msg.Throttle]].
  *
- *  An input plugins must start consuming input ONLY when the `Start` message is received and
+ *  An input plugin must start consuming input ONLY when the `Start` message is received and
  *  must stop when `Stop` is received.
  *
  *  Start means reading the input and send `Events` to the filter pipeline.
@@ -38,7 +37,7 @@ object InputPlugin {
  *  @param filterPipeline the configured filter pipeline.
  *
  */
-abstract class InputPlugin(val config:PluginConfig, val filterPipeline: ActorRef)
+abstract class InputPlugin(val config:PluginConfig)
   extends Plugin with Actor with ActorLogging {
 
   import InputPlugin.Msg
@@ -49,25 +48,23 @@ abstract class InputPlugin(val config:PluginConfig, val filterPipeline: ActorRef
     case Msg.Throttle => throttle()
   }
 
-  def start() {}
-  def stop() {}
-  def throttle() {}
+  def start(): Unit
+  def stop(): Unit
+  def throttle(): Unit
 
 }
 
 /**  A Filter is an  `Option[Event] => Option[Event]` function (or  `Function1[Option[Event],Option[Event]]`).
   *
-  * It is created from a config and a set ActorRefs which point to the output plugins.
-  * Filter plugins are composed together and attached to a host actor by the Processor.
-  * They are invoked when the host actor is handled a message.
+  * It is created from a config and composed with other filter functions by a host actor.
+  *
   *
   * @param config configuration of the plugin
   *
   */
-abstract class FilterPlugin(val config: PluginConfig, val outputs: Set[ActorRef])
-  extends Plugin with ( Option[Event] => Option[Event] ) {
+abstract class FilterPlugin(val config: PluginConfig)
+  extends Plugin with ( Option[Event] => Option[Event] )
 
-}
 
 
 /** An output plugin is an actor which accepts Start, Stop and Event messages.

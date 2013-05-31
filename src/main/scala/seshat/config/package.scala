@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory
  */
 package object config {
 
+  val enhancedConfigLog = LoggerFactory.getLogger(classOf[EnhancedConfigValue])
+
   /** Enhances a ConfigValue
    *
    * @param value the value to enhance.
@@ -21,20 +23,20 @@ package object config {
     import java.util.HashMap
 
     // FIXME make recursive
-    def toMap = {
-      lazy val log = LoggerFactory.getLogger(getClass)
+    def extracted = {
       try {
         value.unwrapped
-                  .asInstanceOf[HashMap[String,String]]
-                  .asScala
-                  .toMap
+          .asInstanceOf[HashMap[String,String]]
+          .asScala
+          .toMap
       } catch {
         // FIXME try to get a single value if it is one.
         case e: ClassCastException => 
-          log.error( "Cannot convert "+value.unwrapped+
-                     " of class "+value.unwrapped.getClass.getName+
-                     " to Map ("+value.render+")"
-                   )
+          enhancedConfigLog.error(
+            "Cannot convert "+value.unwrapped+
+            " of class "+value.unwrapped.getClass.getName+
+            " to Map ("+value.render+")"
+          )
           throw e
       }
 
@@ -48,19 +50,16 @@ package object config {
     val config = ConfigFactory.parseFile(file)
 
     val inputConfig =
-      config.getObject("input").asScala.map(
-        { case (k,v) => PluginConfig(k,v.toMap) }
-      ).toSet
+      config.getObject("input").asScala
+        .map( { case (k,v) => PluginConfig(k,v.extracted) } ).toSet
 
     val filterConfig =
-      config.getObject("filter").asScala.map(
-        { case (k,v) => PluginConfig(k, v.toMap) }
-      ).toSet
+      config.getObject("filter").asScala
+        .map( { case (k,v) => PluginConfig(k, v.extracted) } ).toSet
 
     val outputConfig =
-      config.getObject("output").asScala.map(
-        { case (k,v) => PluginConfig(k,v.toMap)  }
-      ).toSet
+      config.getObject("output").asScala
+        .map( { case (k,v) => PluginConfig(k,v.extracted) } ).toSet
 
     SeshatConfig(
       file.getName,
@@ -68,8 +67,6 @@ package object config {
       filterConfig,
       outputConfig
     )
-
-
 
   }
 
