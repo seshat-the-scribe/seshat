@@ -60,7 +60,7 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
   * Filter plugins are supposed to ask for data when they are ready.
   *
   */
-class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescriptor] )
+class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescriptor] )
   extends Actor with ActorLogging {
 
   import context.{actorOf,watch}
@@ -77,7 +77,7 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
     case Processor.Msg.Start      => inputs foreach ( _ ! InputPlugin.Msg.Start )
     case Processor.Msg.Stop       => inputs foreach ( _ ! InputPlugin.Msg.Stop  )
     case Processor.Msg.Events(es) => receivedEvents.enqueue(es : _*)
-    case Processor.Msg.GetEvents  => if( receivedEvents.size > 0  ) sendEvents(sender)
+    case Processor.Msg.GetEvents  => if( receivedEvents.size > 0 ) sendEvents(sender)
   }
 
 
