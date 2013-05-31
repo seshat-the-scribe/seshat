@@ -41,7 +41,9 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
     case Msg.Stop   => stop()
   }
 
-  def start() {}
+  def start() {
+    inputHandler ! Processor.Msg.Start
+  }
   def stop()  {}
 
   val inputHandler = watch(actorOf(
