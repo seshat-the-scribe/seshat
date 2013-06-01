@@ -38,7 +38,7 @@ package object seshat {
    *
    */
   case class Event(
-    raw:                Array[Byte],
+    raw:                Any,
     kind:               String,
     timestamp:          Long,
     fields:             Map[String, String] = Map(),
