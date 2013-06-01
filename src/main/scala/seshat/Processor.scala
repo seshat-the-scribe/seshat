@@ -2,10 +2,10 @@ package seshat
 
 import seshat.plugin._
 
-import akka.actor.{Props, ActorRef, Actor, ActorLogging}
-import scala.util.control.Exception._
-
-
+import akka.actor._
+import seshat.plugin.PluginConfig
+import seshat.plugin.Plugins
+import seshat.plugin.PluginDescriptor
 
 
 /**
@@ -82,14 +82,26 @@ class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescrip
     case Processor.Msg.GetEvents  => if( receivedEvents.size > 0 ) sendEvents(sender)
   }
 
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
+    case e:Exception =>
+      log.error(e, "A child Failed")
+      SupervisorStrategy.Escalate
+  }
 
-  private def sendEvents(who: ActorRef) {
-    who ! Processor.Msg.Events (
-      ( 1 to (config.queueSize / 2)).map ( _ =>
-         catching(classOf[java.util.NoSuchElementException])
-              .opt( receivedEvents.dequeue )
-      ).flatten
-    )
+
+  /** Sends half our queue to the passed actorRef */
+  private def sendEvents(requestor: ActorRef) {
+
+    val size = if (receivedEvents.size >= config.queueSize)
+      config.queueSize / 2
+    else
+      receivedEvents.size
+
+    val events =
+      (1 to size).map( _ => receivedEvents.dequeue() )
+
+    requestor ! Processor.Msg.Events(events)
+
   }
 
   private def spawn(descriptor: PluginDescriptor, config: PluginConfig ): ActorRef =
