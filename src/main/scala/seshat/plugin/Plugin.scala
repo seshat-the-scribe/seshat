@@ -21,36 +21,43 @@ object InputPlugin {
 }
 
 /**  An input plugin is an actor that reads events from a source and sends them to its parent.
- *
- *  It must support the messages [[seshat.plugin.InputPlugin.Msg.Start]],
- *  [[seshat.plugin.InputPlugin.Msg.Stop]] and [[seshat.plugin.InputPlugin.Msg.Throttle]].
- *
- *  An input plugin must start consuming input ONLY when the `Start` message is received and
- *  must stop when `Stop` is received.
- *
- *  Start means reading the input and send `Events` to the filter pipeline.
- *  Stops means stop reading and send the remaining events to the pipeline; no Events should be dropped.
- *
- *  Input plugins are free to use postStop and postStart lifecycle events.
- *
- *  @param config configuration of the plugin
- *  @param filterPipeline the configured filter pipeline.
- *
- */
+  *
+  *  It must support the messages [[seshat.plugin.InputPlugin.Msg.Start]],
+  *  [[seshat.plugin.InputPlugin.Msg.Stop]] and [[seshat.plugin.InputPlugin.Msg.Throttle]].
+  *
+  *  An input plugin must start consuming input ONLY when the `Start` message is received and
+  *  must stop when `Stop` is received.
+  *
+  *  An input plugin must send the `Event`s via [[seshat.Processor.Msg.Events]] messages with no more events than what
+  *  [[seshat.SeshatConfig.queueSize]] indicates.
+  *
+  *  Start means reading the input or accepting connections and send `Events` to the parent.
+  *  Stops means stop reading but keep sending the remaining events when asked; no Events should be dropped.
+  *
+  *  Input plugins should never `context.stop` themselves.
+  *
+  *  Input plugins are free to use postStop and postStart lifecycle events.
+  *
+  *  @param config configuration of the plugin
+  *
+*/
 abstract class InputPlugin(val config:PluginConfig)
   extends Plugin with Actor with ActorLogging {
 
   import InputPlugin.Msg
 
-  def receive = {
+  final protected val defaultHandler: Receive  = {
     case Msg.Start    => start()
     case Msg.Stop     => stop()
     case Msg.Throttle => throttle()
   }
 
+  def receive: Receive = defaultHandler
+
   def start(): Unit
   def stop(): Unit
   def throttle(): Unit
+
 
 }
 
