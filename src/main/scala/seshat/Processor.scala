@@ -47,11 +47,16 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
   def stop()  {}
 
   val inputHandler = watch(actorOf(
-    Props(
-      classOf[InputHandler], config, plugins.inputs
-    ),
-    "INPUT_HANDLER"
-  ))
+    Props(classOf[InputHandler], config, plugins.inputs), "INPUT_HANDLER")
+  )
+
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
+    case e: Exception =>
+      log.error(e, "A Child Failed")
+      context.stop(self)
+      context.system.shutdown()
+      SupervisorStrategy.Escalate
+  }
 
 }
 
@@ -70,9 +75,11 @@ class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescrip
   private val receivedEvents = collection.mutable.Queue[Event]()
 
   private val inputs: Set[ActorRef] = config.inputs.map { cfg =>
-    descriptors.find(_.name == cfg.name).fold ( throw Kaboom(s"No plugins defined for config $cfg") ){
+    descriptors.find(_.name == cfg.name).fold (
+      throw Kaboom(s"No plugins defined for config $cfg")
+    ) (
       descr => spawn(descr,cfg)
-    }
+    )
   }
 
   def receive: Actor.Receive = {
@@ -109,11 +116,11 @@ class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescrip
       actorOf( Props(descriptor.clazz, config ), descriptor.name )
     )
 
-
 }
 
 /** Composes together a set of filter functions and asks for events from the input.
-  * It maintains a queue of already filtered events and responds to GetEvents.
+  * It maintains a queue of already filtered events and responds to GetEvents by sending them
+  * to the `sender`.
   */
 class FilterSupervisor(val input: ActorRef,  val plugins: Seq[Plugin]  )
     extends Actor with ActorLogging {
