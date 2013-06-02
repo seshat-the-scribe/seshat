@@ -23,11 +23,12 @@ import seshat.config._
 package object seshat {
 
   case class SeshatConfig (
-    name:       String,
-    inputs:     Set[PluginConfig],
-    filters:    Set[PluginConfig],
-    outputs:    Set[PluginConfig],
-    queueSize:  Int = 100
+    name:        String,
+    inputs:      Set[PluginConfig],
+    filters:     Set[PluginConfig],
+    outputs:     Set[PluginConfig],
+    queueSize:          Int = 100,
+    filterParallelism:  Int = 2
   )
 
   /**

@@ -70,7 +70,7 @@ abstract class InputPlugin(val config:PluginConfig)
   *
   */
 abstract class FilterPlugin(val config: PluginConfig)
-  extends Plugin with ( Option[Event] => Option[Event] )
+  extends Plugin with ( Event => Event )
 
 
 
