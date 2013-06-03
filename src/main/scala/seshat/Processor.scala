@@ -163,7 +163,19 @@ class FilterSupervisor(val input: ActorRef, val config: SeshatConfig,  val descr
     input ! Processor.Msg.GetEvents
   }
 
-  private def sendEvents(sndr:ActorRef) = ???
+  private def sendEvents(sndr:ActorRef) = {
+
+    val size = if ( filteredEvents.size >= config.queueSize)
+      config.queueSize
+    else
+      filteredEvents.size
+
+    val events =
+      (1 to size).map( _ => filteredEvents.dequeue() )
+
+    sndr ! Processor.Msg.Events(events)
+
+  }
 
   private def scheduleAsk {
     // //FIXME Exponential backoff? ask once? an then?
