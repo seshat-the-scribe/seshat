@@ -3,6 +3,7 @@ package seshat.plugin
 import seshat._
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
+import seshat.processor.Processor
 
 /**
  *
@@ -28,7 +29,7 @@ object InputPlugin {
   *  An input plugin must start consuming input ONLY when the `Start` message is received and
   *  must stop when `Stop` is received.
   *
-  *  An input plugin must send the `Event`s via [[seshat.Processor.Msg.Events]] messages with no more events than what
+  *  An input plugin must send the `Event`s via [[Processor.Msg.Events]] messages with no more events than what
   *  [[seshat.SeshatConfig.queueSize]] indicates.
   *
   *  Start means reading the input or accepting connections and send `Events` to the parent.

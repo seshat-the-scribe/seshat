@@ -2,6 +2,7 @@
 import akka.actor.{ActorRef, Props, ActorSystem}
 import seshat.plugin._
 import seshat.config._
+import seshat.processor.Processor
 
 
 /** Seshat is a tool and library to handle streams of logs.
@@ -23,10 +24,10 @@ import seshat.config._
 package object seshat {
 
   case class SeshatConfig (
-    name:        String,
-    inputs:      Set[PluginConfig],
-    filters:     Set[PluginConfig],
-    outputs:     Set[PluginConfig],
+    name:               String,
+    inputs:             Set[PluginConfig],
+    filters:            Set[PluginConfig],
+    outputs:            Set[PluginConfig],
     queueSize:          Int = 100,
     filterParallelism:  Int = 2
   )
@@ -34,7 +35,7 @@ package object seshat {
   /**
    *  Represents a event going through the pipeline.
    *  
-   *  This classes should be instantiated by an InputPlugin with the raw data
+   *  This classes should be instantiated by an InputPlugin with the raw data,
    *  a timestamp and an event kind.
    *
    */

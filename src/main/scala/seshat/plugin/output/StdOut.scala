@@ -1,4 +1,4 @@
 package seshat.plugin.output
 
-class StdOut
+class Stdout
 
