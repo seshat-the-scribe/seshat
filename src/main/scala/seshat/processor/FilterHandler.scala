@@ -29,7 +29,7 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
   private val filteredEvents = collection.mutable.Queue[Event]()
   private val filterPipeline = buildPipeline
 
-  def receive: Actor.Receive =  defaultHandler orElse askAgainHandler
+  def receive: Actor.Receive =  defaultHandler
 
   def defaultHandler: Receive = {
 

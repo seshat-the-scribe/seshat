@@ -5,7 +5,7 @@ import concurrent.duration._
 import akka.dispatch.MessageDispatcher
 import scala.concurrent.ExecutionContext
 
-/** Encapsulates Asking for event behaviour
+/** Encapsulates Asking for events behaviour
  * Created by f on 6/22/13.
  */
 trait AskAgainProtocol extends Actor  {
@@ -18,13 +18,10 @@ trait AskAgainProtocol extends Actor  {
   private lazy val rnd = new java.util.Random
   rnd.setSeed(new java.util.Date().getTime)
 
-  protected def askAgainHandler: Receive = {
-    case Processor.Common.AskAgain(who, what) => who ! what
-  }
 
   protected def resetRetries() { retries = 0 }
 
-  /** Schedule delivery of a `Msg.AskAgain` to `self`.
+  /** Schedule delivery of a `Msg.AskAgain` to `who`.
     *
     * if retries <= 10 then rnd(retries*10)+100
     * if retries >  10 then rnd(100)+100
@@ -44,11 +41,7 @@ trait AskAgainProtocol extends Actor  {
         rnd.nextInt(retries*10)+100
 
     context.system.scheduler
-      .scheduleOnce(
-        wait millis,
-        self,
-        Processor.Common.AskAgain(who, what)
-      )
+      .scheduleOnce(wait millis, who, what)
 
   }
 

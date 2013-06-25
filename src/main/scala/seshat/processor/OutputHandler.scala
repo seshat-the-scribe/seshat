@@ -28,12 +28,12 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
     )
   }
 
-  def receive: Receive = defaultHandler orElse askAgainHandler
+  def receive: Receive = defaultHandler
 
   def defaultHandler: Receive = {
 
     case Processor.Common.Events(events) =>
-      if (events.size > 0) stashedEvents enqueue (events: _*)
+      if (events.size > 0) storeEvents(events)
       else scheduleAsk(filter, Processor.Common.GetEvents)
 
     case Processor.Common.GetEvents =>
@@ -42,27 +42,44 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
 
   }
 
-  private def sendEvents(sndr: ActorRef) {
+  /** Copy events to each output's storage */
+  private def storeEvents(events: Seq[Event]) {
+    outputs foreach { output =>
+      val previous = stashedEvents.getOrElseUpdate(
+        output,
+        Seq()
+      )
+      stashedEvents.put(output,events++previous)
+    }
+  }
+
+  /**
+   *   Takes `config.queueSize` messages from the output storage
+   *   and sends it.
+   */
+  private def sendEvents(who: ActorRef) {
+
+    val allEvents = stashedEvents(who) // BLOW AWAY
 
     val size =
-      if (stashedEvents.size >= config.queueSize)
+      if (allEvents.size >= config.queueSize)
         config.queueSize
       else
-        stashedEvents.size
+        allEvents.size
 
-    val events =
-      (1 to size).map( _ => stashedEvents.dequeue() )
+    val nextBatch = allEvents take size
+    val remaining = allEvents drop size
 
-    sndr ! Processor.Common.Events(events)
+    stashedEvents.put(who,remaining)
+
+    who ! Processor.Common.Events(nextBatch)
 
   }
 
-  def spawnOutputActor(descriptor: PluginDescriptor, config: PluginConfig): ActorRef =
+  private def spawnOutputActor(descriptor: PluginDescriptor, config: PluginConfig): ActorRef =
     watch(
       actorOf( Props(descriptor.clazz, config ), descriptor.name )
     )
-
-
 
 
 }
