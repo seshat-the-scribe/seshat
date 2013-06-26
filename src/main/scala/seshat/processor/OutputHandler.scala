@@ -24,42 +24,77 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
 
   private val outputs: Set[ActorRef] = config.outputs.map { cfg =>
     descriptors.find(_.name == cfg.name).fold ( throw Kaboom(s"No plugins defined for config $cfg") ) (
-      descr => spawnOutputActor(descr, cfg)
+      descr => {
+        val o = spawnOutputActor(descr, cfg)
+        stashedEvents.put(o, Seq()) // look ma! ugly side effect.
+        o
+      }
     )
   }
 
   def receive: Receive = defaultHandler
 
-  def defaultHandler: Receive = {
+  private def defaultHandler: Receive = {
+
+    case Processor.Msg.Start =>
+      log.debug("Starting")
+      outputs foreach ( _ ! Processor.Msg.Start )
+      filter ! Processor.Common.GetEvents
+
+    case Processor.Msg.Stop =>
+      log.debug("Stopping")
+      outputs foreach ( _ ! Processor.Msg.Stop  )
 
     case Processor.Common.Events(events) =>
-      if (events.size > 0) storeEvents(events)
-      else scheduleAsk(filter, Processor.Common.GetEvents)
+      log.debug(s"Got Events with ${events.size} events : $events ")
+      if (events.size > 0) {
+        storeEvents(events)
+        if ( storeAvailable  ) {
+          filter ! Processor.Common.GetEvents
+        }
+      }
+      else reScheduleAsk(filter, Processor.Common.GetEvents)
 
     case Processor.Common.GetEvents =>
-      if( stashedEvents(sender).size > 0 ) sendEvents(sender)
-      else sender ! Processor.Common.Events(Seq.empty)
+      log.debug(s"Got GetEvents from $sender" )
+      if( stashedEvents(sender).size > 0 ){
+        sendEvents(sender)
+        if ( storeAvailable  ) {
+          filter ! Processor.Common.GetEvents
+        }
+      }
+      else {
+        sender ! Processor.Common.Events(Seq.empty)
+        reScheduleAsk(filter, Processor.Common.GetEvents)
+      }
 
+  }
+
+  private def storeAvailable = {
+    log.debug(s"Checking storage for all outputs $stashedEvents ")
+    val available = stashedEvents forall ({case (k,es) => es.size < config.queueSize })
+    log.debug(s"Is there available storage? $available")
+    available
   }
 
   /** Copy events to each output's storage */
   private def storeEvents(events: Seq[Event]) {
+    log.debug(s"Storing events in output specific storage")
     outputs foreach { output =>
-      val previous = stashedEvents.getOrElseUpdate(
-        output,
-        Seq()
-      )
+      val previous = stashedEvents.getOrElseUpdate(output, Seq())
       stashedEvents.put(output,events++previous)
     }
+    logStorageSizes()
   }
 
-  /**
-   *   Takes `config.queueSize` messages from the output storage
-   *   and sends it.
-   */
+  /**  Takes `config.queueSize` messages from the `who`'s storage
+    *  and sends it.
+    */
   private def sendEvents(who: ActorRef) {
 
-    val allEvents = stashedEvents(who) // BLOW AWAY
+    // if for some reason there is no
+    //  storage for this actorRef then blow up
+    val allEvents = stashedEvents(who)
 
     val size =
       if (allEvents.size >= config.queueSize)
@@ -67,8 +102,7 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
       else
         allEvents.size
 
-    val nextBatch = allEvents take size
-    val remaining = allEvents drop size
+    val (nextBatch, remaining) = allEvents splitAt size
 
     stashedEvents.put(who,remaining)
 
@@ -76,10 +110,16 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
 
   }
 
+  private def logStorageSizes() {
+    log.debug("Stashed events sizes")
+    stashedEvents foreach { case (k,v) =>
+      log.debug(s"Output $k -> ${v.size}")
+    }
+  }
+
   private def spawnOutputActor(descriptor: PluginDescriptor, config: PluginConfig): ActorRef =
     watch(
       actorOf( Props(descriptor.clazz, config ), descriptor.name )
     )
-
 
 }

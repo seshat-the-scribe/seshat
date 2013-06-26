@@ -14,11 +14,12 @@ import seshat.SeshatConfig
   * Filter plugins are supposed to ask for data when they are ready.
   *
   */
-class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescriptor] )
+class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescriptor] )
   extends Actor with ActorLogging {
 
-  import context.{actorOf,watch}
+  import context.{actorOf, watch}
 
+  // FIXME change to var x:List[Event]
   private val receivedEvents = collection.mutable.Queue[Event]()
 
   private val inputs: Set[ActorRef] = config.inputs.map { cfg =>
@@ -30,15 +31,21 @@ class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescrip
   def receive: Actor.Receive = {
 
     case Processor.Msg.Start =>
-      inputs foreach ( _ ! InputPlugin.Msg.Start )
+      log.debug("Starting inputs")
+      inputs foreach ( _ ! Processor.Msg.Start )
 
     case Processor.Msg.Stop =>
-      inputs foreach ( _ ! InputPlugin.Msg.Stop  )
+      log.debug("Stopping inputs")
+      inputs foreach ( _ ! Processor.Msg.Stop  )
 
     case Processor.Common.Events(es) =>
+      // FIXME Check the soft limit.
+      log.debug(s"Got Processor.Common.Events($es)")
       receivedEvents.enqueue(es : _*)
+      log.debug(s"Received events queue size ${receivedEvents.size}")
 
     case Processor.Common.GetEvents =>
+      log.debug(s"Got Processor.Common.GetEvents from $sender")
       if( receivedEvents.size > 0 ) sendEvents(sender)
       else sender ! Processor.Common.Events(Seq.empty)
 
@@ -52,8 +59,9 @@ class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescrip
 
 
   /** Sends `config.queueSize` events to the passed actorRef */
-  private def sendEvents(sndr: ActorRef) {
+  private def sendEvents(who: ActorRef) {
 
+    log.debug("sendEvents")
     // Up to queueSize because that is what the next guy is expecting.
     val size =
       if (receivedEvents.size >= config.queueSize)
@@ -64,7 +72,8 @@ class InputHandler( val config: SeshatConfig, val descriptors: Set[PluginDescrip
     val events =
       (1 to size).map( _ => receivedEvents.dequeue() )
 
-    sndr ! Processor.Common.Events(events)
+    log.debug(s"Will send ${events.size} events  : ${events}")
+    who ! Processor.Common.Events(events)
 
   }
 

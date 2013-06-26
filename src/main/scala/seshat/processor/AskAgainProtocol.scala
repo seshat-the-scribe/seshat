@@ -23,22 +23,22 @@ trait AskAgainProtocol extends Actor  {
 
   /** Schedule delivery of a `Msg.AskAgain` to `who`.
     *
-    * if retries <= 10 then rnd(retries*10)+100
-    * if retries >  10 then rnd(100)+100
+    * if retries <= 10 then rnd(retries*100)+100
+    * if retries >  10 then rnd(100)+1000
     *
     * @param who the ref to the target actor
     * @param what the message
     *
     */
-  protected def scheduleAsk(who: ActorRef, what: Any) {
+  protected def reScheduleAsk(who: ActorRef, what: Any) {
 
     retries = retries + 1
 
     val wait =
-      if (retries > 10)
-        rnd.nextInt(100)+100
+      if (retries > 1000)
+        rnd.nextInt(100)+1000
       else
-        rnd.nextInt(retries*10)+100
+        rnd.nextInt(retries*100)+100
 
     context.system.scheduler
       .scheduleOnce(wait millis, who, what)

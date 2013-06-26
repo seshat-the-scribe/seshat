@@ -10,9 +10,9 @@ import seshat.config._
 package object plugin {
 
   case class Plugins(
-    inputs:   Set[PluginDescriptor],
-    filters:  Set[PluginDescriptor],
-    outputs:  Set[PluginDescriptor]
+    inputs:   IndexedSeq[PluginDescriptor],
+    filters:  IndexedSeq[PluginDescriptor],
+    outputs:  IndexedSeq[PluginDescriptor]
   )
 
   case class PluginConfig(
@@ -34,7 +34,7 @@ package object plugin {
     )
   }
 
-  private def resolve(config:Config, kind: String): Set[PluginDescriptor] = 
+  private def resolve(config:Config, kind: String): IndexedSeq[PluginDescriptor] =
     config.getObject( "seshat.plugins."+kind )
       .asScala
       .map { case (k,v) =>
@@ -43,7 +43,7 @@ package object plugin {
           k,
           validClassOrFail(kind, Class.forName(u("className")))
         )
-      }.toSet
+      }.toVector
 
 
   private def validClassOrFail(kind: String, cls:Class[_]): Class[Plugin] = {

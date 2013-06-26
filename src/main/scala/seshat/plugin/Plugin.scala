@@ -3,7 +3,7 @@ package seshat.plugin
 import seshat._
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
-import seshat.processor.Processor
+import seshat.processor.{AskAgainProtocol, Processor}
 
 /**
  *
@@ -12,24 +12,21 @@ trait Plugin {
  val config: PluginConfig
 }
 
-
 object InputPlugin {
   object Msg {
-    case object Start
-    case object Stop
-    case object Throttle
+    case class Throttle(millis:Option[Int])
   }
 }
 
 /**  An input plugin is an actor that reads events from a source and sends them to its parent.
   *
-  *  It must support the messages [[seshat.plugin.InputPlugin.Msg.Start]],
-  *  [[seshat.plugin.InputPlugin.Msg.Stop]] and [[seshat.plugin.InputPlugin.Msg.Throttle]].
+  *  It must support the messages [[seshat.processor.Processor.Msg.Start]],
+  *  [[seshat.processor.Processor.Msg.Stop]] and [[seshat.plugin.InputPlugin.Msg.Throttle]].
   *
   *  An input plugin must start consuming input ONLY when the `Start` message is received and
   *  must stop when `Stop` is received.
   *
-  *  An input plugin must send the `Event`s via [[Processor.Msg.Events]] messages with no more events than what
+  *  An input plugin must send the `Event`s via [[seshat.processor.Processor.Common.Events]] messages with no more events than what
   *  [[seshat.SeshatConfig.queueSize]] indicates.
   *
   *  Start means reading the input or accepting connections and send `Events` to the parent.
@@ -45,12 +42,10 @@ object InputPlugin {
 abstract class InputPlugin(val config:PluginConfig)
   extends Plugin with Actor with ActorLogging {
 
-  import InputPlugin.Msg
-
   final protected val defaultHandler: Receive  = {
-    case Msg.Start    => start()
-    case Msg.Stop     => stop()
-    case Msg.Throttle => throttle()
+    case Processor.Msg.Start    => start()
+    case Processor.Msg.Stop     => stop()
+    case InputPlugin.Msg.Throttle => throttle()
   }
 
   def receive: Receive = defaultHandler
@@ -75,11 +70,33 @@ abstract class FilterPlugin(val config: PluginConfig)
 
 
 
-/** An output plugin is an actor which accepts Start, Stop and Event messages.
+/** An output plugin is an actor which accepts Start, Stop.
   *
   * They are created and handled by a Outputs actor which acts as a broadcaster and as a buffer.
   *
   * @param config
   */
-abstract class OutputPlugin(val config: PluginConfig)  extends Plugin
+abstract class OutputPlugin(val config: PluginConfig)
+  extends Plugin
+  with Actor
+  with AskAgainProtocol
+  with ActorLogging {
+
+
+
+  final protected val defaultHandler: Receive  = {
+    case Processor.Msg.Start => start()
+    case Processor.Msg.Stop  => stop()
+  }
+
+  def receive: Receive = defaultHandler
+
+  def start() {
+    context.parent ! Processor.Common.GetEvents
+  }
+  def stop() {}
+
+
+
+}
 

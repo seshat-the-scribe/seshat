@@ -38,6 +38,8 @@ object Processor {
     case class Events(events: Seq[Event])
     /** Who's queue is full, notify downstream. */
     case class Choked(who:ActorRef)
+
+
   }
 
 }
@@ -54,18 +56,35 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
   import context.{actorOf,watch}
 
   def receive: Receive = {
-    case Msg.Start  => start()
-    case Msg.Stop   => stop()
+
+    case Msg.Start => start()
+    case Msg.Stop  => stop()
+
+    case Terminated(who) =>
+      log.error("Terminated child")
+      context.system.shutdown()
+      context.system.awaitTermination()
+      sys.exit(1)
+
   }
 
   def start() {
-    inputHandler ! Processor.Msg.Start
-    // send to the rest of the handlers
+    inputHandler  ! Processor.Msg.Start
+    filterHandler ! Processor.Msg.Start
+    outputHandler ! Processor.Msg.Start
   }
-  def stop()  {}
+  def stop()  {???}
 
   val inputHandler = watch(actorOf(
     Props(classOf[InputHandler], config, plugins.inputs), "INPUT_HANDLER")
+  )
+
+  val filterHandler = watch(actorOf(
+    Props(classOf[FilterHandler], inputHandler, config, plugins.filters), "FILTER_HANDLER")
+  )
+
+  val outputHandler = watch(actorOf(
+    Props(classOf[OutputHandler], filterHandler, config, plugins.outputs), "OUTPUT_HANDLER")
   )
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {

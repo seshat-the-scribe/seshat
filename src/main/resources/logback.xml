@@ -41,10 +41,13 @@
 
   </appender>
 
-  <root level="TRACE" >
-    <appender-ref ref="FILE" />
+  <root level="INFO" >
     <appender-ref ref="CONSOLE" />
   </root>
+
+  <logger level="TRACE" name="seshat" additivity="false"  >
+      <appender-ref ref="FILE" />
+  </logger>
 
   <logger level="ERROR" name="me.prettyprint.cassandra" additivity="false"  >
     <appender-ref ref="FILE" />
