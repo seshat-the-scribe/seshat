@@ -28,7 +28,7 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
     )
   }
 
-  def receive: Actor.Receive = {
+  def receive: Receive = {
 
     case Processor.Msg.Start =>
       log.debug("Starting inputs")
@@ -40,8 +40,11 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
 
     case Processor.Common.Events(es) =>
       // FIXME Check the soft limit.
-      log.debug(s"Got Processor.Common.Events($es)")
+      log.debug(s"Got Processor.Common.Events(${es.size})")
       receivedEvents.enqueue(es : _*)
+      if( receivedEvents.size > config.queueSize ) {
+        inputs foreach { _ ! Processor.Msg.Stop }
+      }
       log.debug(s"Received events queue size ${receivedEvents.size}")
 
     case Processor.Common.GetEvents =>
@@ -72,8 +75,12 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
     val events =
       (1 to size).map( _ => receivedEvents.dequeue() )
 
-    log.debug(s"Will send ${events.size} events  : ${events}")
+    log.debug(s"Will send ${events.size} events")
     who ! Processor.Common.Events(events)
+
+    if( receivedEvents.size < config.queueSize ) {
+      inputs foreach { _ ! Processor.Msg.Start }
+    }
 
   }
 

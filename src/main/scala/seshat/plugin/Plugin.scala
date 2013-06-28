@@ -42,6 +42,8 @@ object InputPlugin {
 abstract class InputPlugin(val config:PluginConfig)
   extends Plugin with Actor with ActorLogging {
 
+  protected var started = false
+
   final protected val defaultHandler: Receive  = {
     case Processor.Msg.Start    => start()
     case Processor.Msg.Stop     => stop()
@@ -50,9 +52,15 @@ abstract class InputPlugin(val config:PluginConfig)
 
   def receive: Receive = defaultHandler
 
-  def start(): Unit
-  def stop(): Unit
-  def throttle(): Unit
+  def start() {
+    started = true
+    log.debug("Started")
+  }
+  def stop()  {
+    started = false
+    log.debug("Stopped")
+  }
+  def throttle() {}
 
 
 }
@@ -85,16 +93,31 @@ abstract class OutputPlugin(val config: PluginConfig)
 
 
   final protected val defaultHandler: Receive  = {
+
     case Processor.Msg.Start => start()
     case Processor.Msg.Stop  => stop()
+
+    case Processor.Common.Events(events) =>
+      log.debug(s"Received ${events.size} events")
+      if ( events.size > 0  ) {
+        resetRetries()
+        performOutput(events)
+        scheduleAsk(context.parent, Processor.Common.GetEvents)
+      } else {
+        scheduleAsk(context.parent, Processor.Common.GetEvents)
+      }
+
   }
 
   def receive: Receive = defaultHandler
 
-  def start() {
-    context.parent ! Processor.Common.GetEvents
+  protected def start() {
+    scheduleAsk(context.parent, Processor.Common.GetEvents)
   }
-  def stop() {}
+
+  protected def stop() {}
+
+  protected def performOutput(events: Seq[Event])
 
 
 

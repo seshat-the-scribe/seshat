@@ -40,6 +40,8 @@ object Processor {
     case class Choked(who:ActorRef)
 
 
+
+
   }
 
 }
@@ -64,7 +66,6 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
       log.error("Terminated child")
       context.system.shutdown()
       context.system.awaitTermination()
-      sys.exit(1)
 
   }
 
@@ -89,11 +90,10 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
     case e: Exception =>
-      log.error(e, "A Child Failed")
+      log.info(s"A Child Failed with exception ${e.getMessage}")
       context.stop(self)
       // FIXME Whoever created the processor should watch it
       //       and stop the system if appropriate.
-      context.system.shutdown()
       SupervisorStrategy.Escalate
   }
 

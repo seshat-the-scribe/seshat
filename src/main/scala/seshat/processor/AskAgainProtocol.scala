@@ -1,14 +1,15 @@
 package seshat.processor
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{ActorLogging, Cancellable, ActorRef, Actor}
 import concurrent.duration._
-import akka.dispatch.MessageDispatcher
 import scala.concurrent.ExecutionContext
 
 /** Encapsulates Asking for events behaviour
  * Created by f on 6/22/13.
  */
-trait AskAgainProtocol extends Actor  {
+trait AskAgainProtocol extends Actor with ActorLogging  {
+
+  protected val maxRetries = 500
 
   private var retries = 0
 
@@ -18,32 +19,51 @@ trait AskAgainProtocol extends Actor  {
   private lazy val rnd = new java.util.Random
   rnd.setSeed(new java.util.Date().getTime)
 
+  private[this] var timer: Cancellable = _
 
-  protected def resetRetries() { retries = 0 }
+  /** Reset the retries counter.
+    *
+    * Calling this resets the counter so asking will be fast again.
+    *
+    */
+  protected def resetRetries() {
+    retries = 0
+    if( timer != null && !timer.isCancelled){
+      timer.cancel()
+    }
+  }
 
-  /** Schedule delivery of a `Msg.AskAgain` to `who`.
+  /** Schedule delivery of a `what` to `who`.
     *
-    * if retries <= 10 then rnd(retries*100)+100
-    * if retries >  10 then rnd(100)+1000
+    * if retries <= maxRetries then rnd(maxRetries/2)+maxRetries
+    * if retries >  maxRetries then rnd(ceil(retries/2)+1)
     *
-    * @param who the ref to the target actor
+    * @param who a ref to the target actor
     * @param what the message
     *
     */
-  protected def reScheduleAsk(who: ActorRef, what: Any) {
+  protected def scheduleAsk(who: ActorRef, what: Any) {
 
-    retries = retries + 1
+    if( retries <= maxRetries ) retries = retries + 1
+
+    log.debug(s"Retries: $retries  ")
+
+    if( timer != null && !timer.isCancelled ){
+      timer.cancel()
+    }
 
     val wait =
-      if (retries > 1000)
-        rnd.nextInt(100)+1000
+      if (retries > maxRetries)
+        rnd.nextInt(maxRetries/4)+maxRetries
       else
-        rnd.nextInt(retries*100)+100
+        rnd.nextInt(retries*2)+retries
 
-    context.system.scheduler
-      .scheduleOnce(wait millis, who, what)
+    log.debug(s"Wait time: $wait")
+
+    timer =
+      context.system.scheduler
+        .scheduleOnce(wait millis, who, what)
 
   }
-
 
 }

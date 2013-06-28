@@ -38,19 +38,21 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
       input ! Processor.Common.GetEvents
 
     case Processor.Common.Events(events)  =>
-      log.debug(s"Received ${events.size} events : ${events} ")
+      log.debug(s"Received ${events.size} events")
       if (events.size > 0) runFilters(events)
-      else reScheduleAsk(input, Processor.Common.GetEvents)
+      else scheduleAsk(input, Processor.Common.GetEvents)
 
     case Processor.Common.GetEvents =>
       log.debug(s"Got GetEvents from ${sender}")
-      if( filteredEvents.size > 0 ) {
+      log.debug(s"Available events ${filteredEvents.size}")
+      if( ! filteredEvents.isEmpty) {
         sendEvents(sender)
-        if( filteredEvents.size < config.queueSize ) {
-          input ! Processor.Common.GetEvents
-        }
       }
-      else sender ! Processor.Common.Events(Seq.empty)
+      else {
+        sender  ! Processor.Common.Events(Seq.empty)
+        scheduleAsk(input, Processor.Common.GetEvents)
+      }
+
 
     case Msg.Failed(event, ex) =>
       log.warning(s"Got Msg.Failed for event $event with error $ex ")
@@ -60,22 +62,26 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
 
 
     case Msg.Filtered(e) =>
-      log.debug(s"Got Filtered($e})")
       filteredEvents enqueue e
-      if (filteredEvents.size <= config.queueSize ){
+      if (filteredEvents.isEmpty) {
         input ! Processor.Common.GetEvents
       }
-      log.debug(s"Filtered events ${filteredEvents.size}")
 
   }
 
   private def runFilters(events: Seq[Event]) {
     log.debug("runFilters")
-    resetRetries()
     // and run
     // FIXME rate limit
+    resetRetries()
     val s = self
     events foreach ( event =>
+     //try {
+       //self ! Msg.Filtered(filterPipeline(event))
+     //} catch {
+       //case e: Exception => self ! Msg.Failed(event,e)
+     //}
+
       Future{ filterPipeline(event) }
         .onComplete {
           case Success(e:Event) => s ! Msg.Filtered(e)
@@ -86,6 +92,7 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
 
   private def sendEvents(who: ActorRef) {
     log.debug("sendEvents")
+
     val size =
       if (filteredEvents.size >= config.queueSize)
         config.queueSize

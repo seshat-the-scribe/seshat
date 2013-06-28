@@ -20,10 +20,6 @@ class Dummy(config:PluginConfig) extends InputPlugin(config) {
   private def buildEvent( a: Any ) =
     Event( a, "DUMMY", new Date().getTime )
 
-  def start()     {}  //Dummy
-  def stop()      {}  //Dummy
-  def throttle()  {}  //Dummy
-
 }
 
 

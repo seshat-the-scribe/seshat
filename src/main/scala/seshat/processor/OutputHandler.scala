@@ -39,39 +39,40 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
     case Processor.Msg.Start =>
       log.debug("Starting")
       outputs foreach ( _ ! Processor.Msg.Start )
-      filter ! Processor.Common.GetEvents
+      scheduleAsk(filter, Processor.Common.GetEvents)
 
     case Processor.Msg.Stop =>
       log.debug("Stopping")
       outputs foreach ( _ ! Processor.Msg.Stop  )
 
     case Processor.Common.Events(events) =>
-      log.debug(s"Got Events with ${events.size} events : $events ")
+      log.debug(s"Got Events with ${events.size} events")
       if (events.size > 0) {
+        resetRetries()
         storeEvents(events)
         if ( storeAvailable  ) {
           filter ! Processor.Common.GetEvents
         }
       }
-      else reScheduleAsk(filter, Processor.Common.GetEvents)
+      else scheduleAsk(filter, Processor.Common.GetEvents)
 
     case Processor.Common.GetEvents =>
       log.debug(s"Got GetEvents from $sender" )
-      if( stashedEvents(sender).size > 0 ){
+      if( stashedEvents(sender).size > 0 ) {
         sendEvents(sender)
-        if ( storeAvailable  ) {
+        if ( storeAvailable ) {
           filter ! Processor.Common.GetEvents
         }
       }
       else {
         sender ! Processor.Common.Events(Seq.empty)
-        reScheduleAsk(filter, Processor.Common.GetEvents)
+        scheduleAsk(filter, Processor.Common.GetEvents)
       }
 
   }
 
   private def storeAvailable = {
-    log.debug(s"Checking storage for all outputs $stashedEvents ")
+    log.debug(s"Checking storage for all output")
     val available = stashedEvents forall ({case (k,es) => es.size < config.queueSize })
     log.debug(s"Is there available storage? $available")
     available

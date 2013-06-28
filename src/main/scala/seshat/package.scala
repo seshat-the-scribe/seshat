@@ -28,7 +28,7 @@ package object seshat {
     inputs:             Set[PluginConfig],
     filters:            Set[PluginConfig],
     outputs:            Set[PluginConfig],
-    queueSize:          Int = 100,
+    queueSize:          Int = 2000,
     filterParallelism:  Int = 2
   )
 

@@ -5,18 +5,19 @@ import java.util.{Date, Scanner}
 import concurrent.duration._
 import seshat.processor.Processor.Common.Events
 import seshat.Event
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import concurrent.blocking
 import akka.actor.ActorRef
 
 
 class Stdin(config:PluginConfig) extends InputPlugin(config) {
 
-  val scheduler = context.system.scheduler
+  private val scheduler = context.system.scheduler
 
-  val sc = new Scanner(System.in)
+  private val sc = new Scanner(System.in)
 
   private case object Moar
+
+  private val sleepPeriod = 5.millis
 
   override def receive: Receive = defaultHandler orElse stdinHandler
 
@@ -24,16 +25,17 @@ class Stdin(config:PluginConfig) extends InputPlugin(config) {
   implicit val exCtx = context.dispatcher
 
   def stdinHandler: Receive = {
-    case Moar =>
+
+    case Moar if started  =>
       log.debug("Got Moar Msg")
       val parent = context.parent // fix reference
-      Future {
+      blocking {
         if( sc.hasNextLine ) {
           log.debug("Has Next Line")
           sendLines(parent)
         } else {
-          log.debug("Scheduling Moar 500 millis ahead")
-          scheduler.scheduleOnce(500 millis, self, Moar)
+          log.debug(s"Scheduling Moar $sleepPeriod ahead")
+          scheduler.scheduleOnce(sleepPeriod, self, Moar)
         }
       }
 
@@ -54,13 +56,11 @@ class Stdin(config:PluginConfig) extends InputPlugin(config) {
   }
 
 
-  def start() {
+  override def start() {
     log.info("Started")
     self ! Moar
+    started = true
   }
-
-  def stop()      {???}
-  def throttle()  {???}
 
 }
 
