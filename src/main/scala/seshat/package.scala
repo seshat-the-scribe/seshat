@@ -28,11 +28,11 @@ package object seshat {
     inputs:             Set[PluginConfig],
     filters:            Set[PluginConfig],
     outputs:            Set[PluginConfig],
-    queueSize:          Int = 2000,
+    queueSize:          Int = 100,
     filterParallelism:  Int = 2
   )
 
-  /** Represents a event going through the pipeline.
+  /** Represents an event going through the pipeline.
     *
     *  This class should be instantiated by an InputPlugin with the raw data,
     *  a timestamp and an event kind.
