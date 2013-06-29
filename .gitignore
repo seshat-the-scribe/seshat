@@ -22,3 +22,6 @@ target/
 *.log.*
 java*
 
+
+doc/samples/lines-*
+
