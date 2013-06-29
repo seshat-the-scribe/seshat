@@ -44,6 +44,9 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
       receivedEvents.enqueue(es : _*)
       if( receivedEvents.size > config.queueSize ) {
         inputs foreach { _ ! Processor.Msg.Stop }
+      if( receivedEvents.size > config.queueSize*1.5 ) {
+        //FIXME use statistics to determine throttle time
+        inputs foreach { _ ! InputPlugin.Msg.Throttle(Some(100)) }
       }
       log.debug(s"Received events queue size ${receivedEvents.size}")
 
