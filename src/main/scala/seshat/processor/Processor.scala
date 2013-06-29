@@ -2,18 +2,9 @@ package seshat.processor
 
 import seshat._
 
-import seshat.plugin._
 import seshat.plugin.Plugins
-import seshat.plugin.PluginDescriptor
-import seshat.plugin.PluginConfig
-
 
 import akka.actor._
-import scala.concurrent.Future
-import scala.concurrent.duration._
-
-import scala.util.{Failure, Success}
-
 
 
 /**
@@ -26,7 +17,7 @@ object Processor {
 
   object Msg {
     case object   Start // Tell inputs to start.
-    case object   Stop  // Tell every one to stop
+    case object   Stop  // Tell everyone to stop
   }
 
   object Common {
@@ -38,9 +29,6 @@ object Processor {
     case class Events(events: Seq[Event])
     /** Who's queue is full, notify downstream. */
     case class Choked(who:ActorRef)
-
-
-
 
   }
 
@@ -74,7 +62,11 @@ class Processor( val config: SeshatConfig, val plugins: Plugins )
     filterHandler ! Processor.Msg.Start
     outputHandler ! Processor.Msg.Start
   }
-  def stop()  {???}
+  def stop()  {
+    inputHandler  ! Processor.Msg.Stop
+    filterHandler ! Processor.Msg.Stop
+    outputHandler ! Processor.Msg.Stop
+  }
 
   val inputHandler = watch(actorOf(
     Props(classOf[InputHandler], config, plugins.inputs), "INPUT_HANDLER")
