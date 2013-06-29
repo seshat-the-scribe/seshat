@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext
  */
 trait AskAgainProtocol extends Actor with ActorLogging  {
 
-  protected val maxRetries = 500
+  protected val maxRetries = 250
 
   private var retries = 0
 
@@ -28,7 +28,7 @@ trait AskAgainProtocol extends Actor with ActorLogging  {
     */
   protected def resetRetries() {
     retries = 0
-    if( timer != null && !timer.isCancelled){
+    if( timer != null && !timer.isCancelled ) {
       timer.cancel()
     }
   }
@@ -46,7 +46,7 @@ trait AskAgainProtocol extends Actor with ActorLogging  {
 
     if( retries <= maxRetries ) retries = retries + 1
 
-    log.debug(s"Retries: $retries  ")
+    log.debug(s"Retries: $retries")
 
     if( timer != null && !timer.isCancelled ){
       timer.cancel()
@@ -56,7 +56,7 @@ trait AskAgainProtocol extends Actor with ActorLogging  {
       if (retries > maxRetries)
         rnd.nextInt(maxRetries/4)+maxRetries
       else
-        rnd.nextInt(retries*2)+retries
+        rnd.nextInt(retries*2)+20+retries
 
     log.debug(s"Wait time: $wait")
 
