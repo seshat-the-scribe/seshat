@@ -1,11 +1,10 @@
 package seshat.plugin.input
 
 import seshat.plugin.{PluginConfig, InputPlugin}
-import java.util.{Date, Scanner}
-import concurrent.duration._
-import seshat.processor.Processor.Common.Events
+import java.util.Date
+import seshat.processor.Processor.Internal.Batch
 import seshat.Event
-import scala.concurrent.{Future, blocking}
+import scala.concurrent.blocking
 import akka.actor.ActorRef
 import java.io.RandomAccessFile
 import seshat.processor.AskAgainProtocol
@@ -36,7 +35,7 @@ class File(config:PluginConfig)
     case Moar if started  =>
       log.debug("Got Moar Msg")
       val parent = context.parent // fix reference
-      Future {
+      blocking {
         var i = 0
         var lines = List[String]()
         while(i<batchSize){
@@ -61,7 +60,7 @@ class File(config:PluginConfig)
       Event( line, "file", (new Date()).getTime, fieldsToAdd  )
     }
 
-    parent ! Events( events.reverse )
+    parent ! Batch( events.reverse )
 
     log.debug("Rescheduling Moar")
     scheduleAsk(self,Moar)
@@ -77,6 +76,7 @@ class File(config:PluginConfig)
 
   override def postStop() {
     file.close()
+    log.debug("Closed")
   }
 }
 

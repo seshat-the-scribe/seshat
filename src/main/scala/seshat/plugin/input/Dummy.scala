@@ -6,7 +6,7 @@ import java.util.Date
 
 /** This input plugins exists only for testing purposes.
   *
-  * One can send it `Events` or `Any` and it will send them to the parent.
+  * One can send it `Batch` or `Any` and it will send them to the parent.
   * `Any`s are previously wrapped in an Event.
   *
   */

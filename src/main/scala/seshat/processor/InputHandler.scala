@@ -38,22 +38,22 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
       log.debug("Stopping inputs")
       inputs foreach ( _ ! Processor.Msg.Stop  )
 
-    case Processor.Common.Events(es) =>
+    case Processor.Internal.Batch(es) =>
       // FIXME Check the soft limit.
-      log.debug(s"Got Processor.Common.Events(${es.size})")
+      log.debug(s"Got Processor.Internal.Batch(${es.size})")
       receivedEvents.enqueue(es : _*)
-      if( receivedEvents.size > config.queueSize ) {
-        inputs foreach { _ ! Processor.Msg.Stop }
       if( receivedEvents.size > config.queueSize*1.5 ) {
         //FIXME use statistics to determine throttle time
         inputs foreach { _ ! InputPlugin.Msg.Throttle(Some(100)) }
       }
       log.debug(s"Received events queue size ${receivedEvents.size}")
 
-    case Processor.Common.GetEvents =>
-      log.debug(s"Got Processor.Common.GetEvents from $sender")
-      if( receivedEvents.size > 0 ) sendEvents(sender)
-      else sender ! Processor.Common.Events(Seq.empty)
+    case Processor.Internal.NextBatch =>
+      log.debug(s"Got Processor.Internal.NextBatch from $sender")
+      if( receivedEvents.size > 0 ) 
+        sendEvents(sender)
+      else 
+        sender ! Processor.Internal.Batch(Seq.empty)
 
   }
 
@@ -79,11 +79,8 @@ class InputHandler( val config: SeshatConfig, val descriptors: Seq[PluginDescrip
       (1 to size).map( _ => receivedEvents.dequeue() )
 
     log.debug(s"Will send ${events.size} events")
-    who ! Processor.Common.Events(events)
+    who ! Processor.Internal.Batch(events)
 
-    if( receivedEvents.size < config.queueSize ) {
-      inputs foreach { _ ! Processor.Msg.Start }
-    }
 
   }
 

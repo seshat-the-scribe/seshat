@@ -39,34 +39,34 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
     case Processor.Msg.Start =>
       log.debug("Starting")
       outputs foreach ( _ ! Processor.Msg.Start )
-      scheduleAsk(filter, Processor.Common.GetEvents)
+      scheduleAsk(filter, Processor.Internal.NextBatch)
 
     case Processor.Msg.Stop =>
       log.debug("Stopping")
       outputs foreach ( _ ! Processor.Msg.Stop  )
 
-    case Processor.Common.Events(events) =>
-      log.debug(s"Got Events with ${events.size} events")
+    case Processor.Internal.Batch(events) =>
+      log.debug(s"Got Batch with ${events.size} events")
       if (events.size > 0) {
         resetRetries()
         storeEvents(events)
         if ( storeAvailable  ) {
-          filter ! Processor.Common.GetEvents
+          filter ! Processor.Internal.NextBatch
         }
       }
-      else scheduleAsk(filter, Processor.Common.GetEvents)
+      else scheduleAsk(filter, Processor.Internal.NextBatch)
 
-    case Processor.Common.GetEvents =>
-      log.debug(s"Got GetEvents from $sender" )
+    case Processor.Internal.NextBatch =>
+      log.debug(s"Got NextBatch from $sender" )
       if( stashedEvents(sender).size > 0 ) {
         sendEvents(sender)
         if ( storeAvailable ) {
-          filter ! Processor.Common.GetEvents
+          filter ! Processor.Internal.NextBatch
         }
       }
       else {
-        sender ! Processor.Common.Events(Seq.empty)
-        scheduleAsk(filter, Processor.Common.GetEvents)
+        sender ! Processor.Internal.Batch(Seq.empty)
+        scheduleAsk(filter, Processor.Internal.NextBatch)
       }
 
   }
@@ -107,7 +107,7 @@ class OutputHandler( val filter: ActorRef, val config: SeshatConfig, val descrip
 
     stashedEvents.put(who,remaining)
 
-    who ! Processor.Common.Events(nextBatch)
+    who ! Processor.Internal.Batch(nextBatch)
 
   }
 

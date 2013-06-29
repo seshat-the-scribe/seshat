@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 /** Composes together a set of filter functions and asks for events from the input.
-  * It maintains a queue of already filtered events and responds to GetEvents by sending
+  * It maintains a queue of already filtered events and responds to NextBatch by sending
   * those events back.
   */
 class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descriptors: Seq[PluginDescriptor] )
@@ -35,22 +35,22 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
 
     case Processor.Msg.Start =>
       log.debug("Starting")
-      input ! Processor.Common.GetEvents
+      input ! Processor.Internal.NextBatch
 
-    case Processor.Common.Events(events)  =>
+    case Processor.Internal.Batch(events)  =>
       log.debug(s"Received ${events.size} events")
       if (events.size > 0) runFilters(events)
-      else scheduleAsk(input, Processor.Common.GetEvents)
+      else scheduleAsk(input, Processor.Internal.NextBatch)
 
-    case Processor.Common.GetEvents =>
-      log.debug(s"Got GetEvents from ${sender}")
+    case Processor.Internal.NextBatch =>
+      log.debug(s"Got NextBatch from ${sender}")
       log.debug(s"Available events ${filteredEvents.size}")
       if( ! filteredEvents.isEmpty) {
         sendEvents(sender)
       }
       else {
-        sender  ! Processor.Common.Events(Seq.empty)
-        scheduleAsk(input, Processor.Common.GetEvents)
+        sender  ! Processor.Internal.Batch(Seq.empty)
+        scheduleAsk(input, Processor.Internal.NextBatch)
       }
 
 
@@ -64,7 +64,7 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
     case Msg.Filtered(e) =>
       filteredEvents enqueue e
       if (filteredEvents.isEmpty) {
-        input ! Processor.Common.GetEvents
+        input ! Processor.Internal.NextBatch
       }
 
   }
@@ -103,7 +103,7 @@ class FilterHandler( val input: ActorRef, val config: SeshatConfig, val descript
       (1 to size).map( _ => filteredEvents.dequeue() )
 
     log.debug(s"Sending ${events.size} events to $who")
-    who ! Processor.Common.Events(events)
+    who ! Processor.Internal.Batch(events)
 
   }
 

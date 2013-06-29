@@ -3,7 +3,7 @@ package seshat.plugin.input
 import seshat.plugin.{PluginConfig, InputPlugin}
 import java.util.{Date, Scanner}
 import concurrent.duration._
-import seshat.processor.Processor.Common.Events
+import seshat.processor.Processor.Internal.Batch
 import seshat.Event
 import concurrent.blocking
 import akka.actor.ActorRef
@@ -48,7 +48,7 @@ class Stdin(config:PluginConfig) extends InputPlugin(config) {
     val event = Event( sc.nextLine(), "stdin", (new Date()).getTime )
 
     log.debug(s"Sending Event $event")
-    parent ! Events( Seq(event) )
+    parent ! Batch( Seq(event) )
 
     log.debug("Rescheduling Moar")
     scheduler.scheduleOnce(5 milli, self, Moar)

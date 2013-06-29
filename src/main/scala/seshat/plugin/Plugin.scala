@@ -26,11 +26,11 @@ object InputPlugin {
   *  An input plugin must start consuming input ONLY when the `Start` message is received and
   *  must stop when `Stop` is received.
   *
-  *  An input plugin must send the `Event`s via [[seshat.processor.Processor.Common.Events]] messages with no more events than what
+  *  An input plugin must send the `Event`s via [[seshat.processor.Processor.Internal.Batch]] messages with no more events than what
   *  [[seshat.SeshatConfig.queueSize]] indicates.
   *
-  *  Start means reading the input or accepting connections and send `Events` to the parent.
-  *  Stops means stop reading but keep sending the remaining events when asked; no Events should be dropped.
+  *  Start means reading the input or accepting connections and send `Batch` to the parent.
+  *  Stops means stop reading but keep sending the remaining events when asked; no Batch should be dropped.
   *
   *  Input plugins should never `context.stop` themselves.
   *
@@ -97,14 +97,14 @@ abstract class OutputPlugin(val config: PluginConfig)
     case Processor.Msg.Start => start()
     case Processor.Msg.Stop  => stop()
 
-    case Processor.Common.Events(events) =>
+    case Processor.Internal.Batch(events) =>
       log.debug(s"Received ${events.size} events")
       if ( events.size > 0  ) {
         resetRetries()
         performOutput(events)
-        scheduleAsk(context.parent, Processor.Common.GetEvents)
+        scheduleAsk(context.parent, Processor.Internal.NextBatch)
       } else {
-        scheduleAsk(context.parent, Processor.Common.GetEvents)
+        scheduleAsk(context.parent, Processor.Internal.NextBatch)
       }
 
   }
@@ -112,7 +112,7 @@ abstract class OutputPlugin(val config: PluginConfig)
   def receive: Receive = defaultHandler
 
   protected def start() {
-    scheduleAsk(context.parent, Processor.Common.GetEvents)
+    scheduleAsk(context.parent, Processor.Internal.NextBatch)
   }
 
   protected def stop() {}

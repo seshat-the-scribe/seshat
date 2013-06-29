@@ -20,13 +20,14 @@ object Processor {
     case object   Stop  // Tell everyone to stop
   }
 
-  object Common {
+  object Internal {
+
     /** Used to ask for more events  */
-    case object GetEvents
-    /** This message forces the sending of a GetEvents message to the input */
+    case object NextBatch
+    /** This message forces the sending of a NextBatch message. */
     case class AskAgain(who: ActorRef, what: Any)
-    /** Used to reply to GetEvents */
-    case class Events(events: Seq[Event])
+    /** Used to reply to NextBatch */
+    case class Batch(events: Seq[Event])
     /** Who's queue is full, notify downstream. */
     case class Choked(who:ActorRef)
 
