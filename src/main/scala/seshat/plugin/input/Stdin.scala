@@ -1,5 +1,13 @@
 package seshat.plugin.input
 
-class StdIn
+import seshat.plugin._
+
+class StdIn(config: PluginConfig ) extends InputPlugin(config) {
+
+  def receive = {
+    case x =>
+  }
+
+}
 
 

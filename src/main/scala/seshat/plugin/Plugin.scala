@@ -21,8 +21,7 @@ trait Plugin {
  val config: PluginConfig
 }
 
-/**  An input plugin is an actor that is built with  a config and an
- *  ActorRef to the filter actor.
+/**  An input plugin is an actor that is built with a config 
  *
  *  It must support the messages [[seshat.plugin.Plugin.Msg.Start]]
  *  and [[seshat.plugin.Plugin.Msg.Stop]].
@@ -36,24 +35,22 @@ trait Plugin {
  *  Input plugins are free to use postStop and postStart lifecycle events.
  *
  *  @param config configuration of the plugin
- *  @param filterPipeline the configured filter pipeline.
  *
  */
-abstract class InputPlugin(val config:PluginConfig, filterPipeline: ActorRef)
+abstract class InputPlugin(val config:PluginConfig)
   extends Plugin with Actor with ActorLogging {
 
 }
 
 /**  A Filter is an  `Option[Event] => Option[Event]` function (or  `Function1[Option[Event],Option[Event]]`).
   *
-  * It is created from a config and a set ActorRefs which point to the output plugins.
   * Filter plugins are composed together and attached to a host actor by the Processor.
   * They are invoked when the host actor is handled a message.
   *
   * @param config configuration of the plugin
   *
   */
-abstract class FilterPlugin(val config:PluginConfig, val outputs: Set[ActorRef])  
+abstract class FilterPlugin(val config:PluginConfig)  
   extends Plugin with ( Option[Event] => Option[Event] ) {
 
 }
