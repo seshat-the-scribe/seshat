@@ -23,14 +23,14 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
 
 
 libraryDependencies ++= Seq(
-                              "com.typesafe.akka"                   %%  "akka-actor"                % "2.2-M3",
-                              "com.typesafe.akka"                   %%  "akka-slf4j"                % "2.2-M3",
+                              "com.typesafe.akka"                   %%  "akka-actor"                % "2.2.0-RC1",
+                              "com.typesafe.akka"                   %%  "akka-slf4j"                % "2.2.0-RC1",
                               "ch.qos.logback"                      %   "logback-classic"           % "1.0.9",
                               "ch.qos.logback"                      %   "logback-core"              % "1.0.9",
-                              "org.eclipse.jetty"                   %   "jetty-servlet"             % "9.0.1.v20130408",
+//                              "org.eclipse.jetty"                   %   "jetty-servlet"             % "9.0.1.v20130408",
                               "com.yammer.metrics"                  %   "metrics-core"              % "3.0.0-BETA1",
                               "com.typesafe.akka"                   %%  "akka-testkit"              % "2.2-M3"    % "test",
-                              "org.specs2"                          %%  "specs2"                    % "1.12.3"   % "test"   )
+                              "org.specs2"                          %%  "specs2"                    % "1.12.3"    % "test"   )
 
 
 testOptions in Test += Tests.Argument( "console", "junitxml" )

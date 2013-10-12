@@ -2,6 +2,7 @@
 import akka.actor.{ActorRef, Props, ActorSystem}
 import seshat.plugin._
 import seshat.config._
+import seshat.processor.Processor
 
 
 /** Seshat is a tool and library to handle streams of logs.
@@ -23,34 +24,36 @@ import seshat.config._
 package object seshat {
 
   case class SeshatConfig (
-    name:    String,
-    inputs:  Set[PluginConfig],
-    filters: Set[PluginConfig],
-    outputs: Set[PluginConfig]
+    name:               String,
+    inputs:             Set[PluginConfig],
+    filters:            Set[PluginConfig],
+    outputs:            Set[PluginConfig],
+    queueSize:          Int = 100,
+    filterParallelism:  Int = 2
   )
 
-  /**
-   *  Represents a event going through the pipeline.
-   *  
-   *  This classes should be instantiated by an InputPlugin with the raw data
-   *  a timestamp and an event kind.
-   *
-   */
+  /** Represents an event going through the pipeline.
+    *
+    *  This class should be instantiated by an InputPlugin with the raw data,
+    *  a timestamp and an event kind.
+    *
+    */
   case class Event(
-    raw:                Array[Byte],
-    kind:               String,
-    timestamp:          Long,
-    fields:             Map[String, String] = Map(),
-    tags:               Set[String] = Set()
+    raw:        Any,
+    kind:       String,
+    timestamp:  Long,
+    fields:     Map[String, String] = Map(),
+    tags:       Set[String]         = Set()
   )
 
 
-  // FIXME propagar el name.
+  // FIXME move to CLI object
   def start( name: String, system: ActorSystem ) {
-    val config = buildConfig( name )
+    val config = buildConfigFromFile( name )
     spawnProcessor(system, config) ! Processor.Msg.Start
   }
 
+  // FIXME extract resolvePlugins and pass plugins via parameter
   def spawnProcessor(system: ActorSystem, config: SeshatConfig): ActorRef = {
     val plugins: Plugins = resolvePlugins
     system.actorOf(

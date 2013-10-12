@@ -1,4 +1,10 @@
 package seshat.plugin.input
 
-class Redis
+import seshat.plugin.{InputPlugin, PluginConfig}
+
+class Redis(config:PluginConfig) extends InputPlugin(config) {
+
+
+}
+
 
