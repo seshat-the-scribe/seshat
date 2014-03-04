@@ -24,7 +24,7 @@ The internal communication between pipelines is done via Channels which are kind
 ## Pipelines in depth
 
 
-## Channles in depth
+## Channels in depth
 
 
 
