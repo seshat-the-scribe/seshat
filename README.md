@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/seshat-the-scribe/seshat.png?label=ready&title=Ready)](https://waffle.io/seshat-the-scribe/seshat)
 seshat
 ======
 
